@@ -1,0 +1,52 @@
+{% extends "index.html" %} {% block content %}
+<div class="container-fluid">
+  <h1 class="h3 mb-4 text-gray-800">연령대별 건강 비교</h1>
+
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <h4 class="small font-weight-bold">
+        내 신체 나이 분석 <span class="float-right">{{ body_age }}세</span>
+      </h4>
+      <div class="progress mb-4" style="height: 25px">
+        <div
+          class="progress-bar bg-info"
+          role="progressbar"
+          style="width: {{ (body_age / my_data.age) * 100 }}%"
+        >
+          분석된 신체 나이: {{ body_age }}세
+        </div>
+      </div>
+      <p class="text-center">
+        "정범 님의 신체 나이는 실제 나이({{ my_data.age }}세)보다
+        <strong>{{ my_data.age - body_age }}세</strong> 젊습니다!"
+      </p>
+    </div>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-success">연령대별 평균 체중 비교</h6>
+    </div>
+    <div class="card-body">
+      <div class="chart-bar"><canvas id="ageBarChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ageData = {{ age_data | tojson }};
+  const ctx = document.getElementById('ageBarChart');
+  new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: ageData.map(d => d.age_group + "대"),
+          datasets: [{
+              label: "평균 체중 (kg)",
+              data: ageData.map(d => d.avg_w),
+              backgroundColor: "#1cc88a"
+          }]
+      },
+      options: { maintainAspectRatio: false }
+  });
+</script>
+{% endblock %}

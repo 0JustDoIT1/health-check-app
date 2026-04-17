@@ -1,0 +1,73 @@
+{% extends "auth_base.html" %}
+
+{% block title %}
+  <title>회원가입</title>
+{% endblock %}
+
+{% block content %}
+
+  <div class="text-center mb-4">
+    <h2 class="font-weight-bold text-primary">건강검진 서비스</h2>
+    <p class="text-muted">회원 정보를 입력하세요</p>
+  </div>
+
+  <form class="user" method="POST" action="{{ url_for('auth.signUp') }}" data-parsley-validate>
+
+    <!-- 이메일 -->
+    <div class="form-group mb-3">
+      <input
+        type="email"
+        name="email"
+        class="form-control form-control-user"
+        placeholder="이메일"
+        required
+        data-parsley-type="email"
+        data-parsley-trigger="change"
+      />
+    </div>
+
+    <!-- 비밀번호 -->
+    <div class="form-group mb-3">
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="form-control form-control-user"
+        placeholder="비밀번호 (8~20자, 영문+숫자+특수문자 포함)"
+        required
+        data-parsley-pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$"
+        data-parsley-trigger="keyup"
+        data-parsley-error-message="8~20자, 영문+숫자+특수문자 포함"
+      />
+    </div>
+
+    <!-- 비밀번호 확인 -->
+    <div class="form-group mb-4">
+      <input
+        type="password"
+        name="re_password"
+        class="form-control form-control-user"
+        placeholder="비밀번호 재입력"
+        required
+        data-parsley-equalto="#password"
+        data-parsley-error-message="비밀번호가 일치하지 않습니다"
+        data-parsley-trigger="keyup"
+      />
+    </div>
+
+    <!-- 버튼 -->
+    <button type="submit" class="btn btn-primary btn-user btn-block">
+      회원가입
+    </button>
+
+  </form>
+
+  <hr />
+
+  <div class="text-center">
+    <a class="small text-primary" href="{{ url_for('auth.signIn') }}">
+      이미 계정이 있으신가요?
+    </a>
+  </div>
+
+{% endblock %}

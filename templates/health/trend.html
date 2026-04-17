@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% block contents %}
+<div class="container-fluid">
+  <h1 class="h3 mb-4 text-gray-800">내 건강 지표 추이</h1>
+  <div class="mb-3">
+    <button class="btn btn-primary btn-sm mr-2" onclick="updateChart('weight')">
+      몸무게
+    </button>
+    <button class="btn btn-info btn-sm mr-2" onclick="updateChart('bmi')">
+      BMI
+    </button>
+    <button class="btn btn-success btn-sm" onclick="updateChart('glucose')">
+      공복혈당
+    </button>
+  </div>
+
+  <div class="chart-area" style="position: relative; height: 40vh; width: 100%">
+    <canvas id="canvasTrend"></canvas>
+  </div>
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">체중 변화 (kg)</h6>
+    </div>
+    <div class="card-body">
+      <div
+        class="chart-area"
+        style="position: relative; height: 40vh; width: 100%"
+      >
+        <canvas id="canvasTrend"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock contents %} {% block extra_scripts %}
+<script>
+  const trendData = {{ trend_data | tojson }};
+  let myChart; // 차트 객체를 전역 변수로 선언
+
+  function updateChart(type) {
+      const labels = trendData.map(item => item.date);
+      let data, labelText, color;
+
+      // 선택한 타입에 따라 데이터와 색상 설정
+      if (type === 'weight') {
+          data = trendData.map(item => item.weight);
+          labelText = '몸무게 (kg)';
+          color = 'rgba(78, 115, 223, 1)';
+      } else if (type === 'bmi') {
+          data = trendData.map(item => item.bmi);
+          labelText = 'BMI 지수';
+          color = 'rgba(54, 185, 204, 1)';
+      } else if (type === 'glucose') {
+          data = trendData.map(item => item.glucose);
+          labelText = '공복혈당 (mg/dL)';
+          color = 'rgba(28, 200, 138, 1)';
+      }
+
+      const ctx = document.getElementById('canvasTrend').getContext('2d');
+
+      // 기존 차트가 있으면 파괴하고 새로 그려야 겹치지 않음
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: labelText,
+                  data: data,
+                  borderColor: color,
+                  fill: false,
+                  lineTension: 0.3
+              }]
+          },
+          options: { maintainAspectRatio: false }
+      });
+  }
+
+  // 처음 페이지 로드 시 몸무게 기본 표시
+  updateChart('weight');
+</script>
+{% endblock %}

@@ -1,9 +1,12 @@
-from flask import Blueprint, render_template, redirect, url_for, session, request, flash
+from flask import Blueprint, render_template, redirect, url_for, session, request, flash, make_response
 from db.connection import getConnection
 import pymysql
 from constants.health import BASE_SCORE, HEALTH_SCHEMA
-from dao.health_dao import getGrade
+from dao.health_dao import getGrade, getUser
 from dao.auth_decorators import checkSignIn
+import pdfkit
+from datetime import datetime
+from urllib.parse import quote
 
 health_bp = Blueprint('health', __name__)
 
@@ -386,3 +389,42 @@ def getHealthList():
         year=year,
         sort=sort
     )
+
+# PDF 다운 - 작동에러있음 수정 필요
+@health_bp.route("/download/pdf/<int:id>")
+@checkSignIn
+def download_pdf(id):
+
+    # 1. HTML 생성 (해당 검사 id 기준)
+    html = healthDetail(id)
+
+    config = pdfkit.configuration(
+        wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    )
+
+    options = {
+        'enable-local-file-access': None
+    }
+
+    # 2. PDF 생성
+    pdf = pdfkit.from_string(html, False, configuration=config, options=options)
+
+    response = make_response(pdf)
+    response.headers["Content-Type"] = "application/pdf"
+
+    # 3. 사용자 정보 가져오기
+    user_id = session.get("user_id")
+    user = getUser(user_id)
+
+    # 4. 파일명 생성 (20260302_허병철_건강검진결과.pdf)
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{date_str}_{user['name']}_건강검진결과.pdf"
+
+    # 5. 한글 안전 처리
+    encoded_filename = quote(filename)
+
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename={encoded_filename}"
+    )
+
+    return response

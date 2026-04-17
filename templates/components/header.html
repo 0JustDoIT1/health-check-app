@@ -46,7 +46,10 @@
             <!-- Dropdown -->
             <div class="dropdown-menu dropdown-menu-right shadow border-0 animated--grow-in"
                 aria-labelledby="userDropdown">
-
+                <a class="dropdown-item" href="{{ url_for('health.download_pdf', id=1) }}">
+                    <i class="fas fa-download fa-sm fa-fw mr-2 text-muted"></i>
+                    PDF 다운
+                </a>
                 <a class="dropdown-item" href="{{ url_for('auth.signOut') }}">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
                     로그아웃

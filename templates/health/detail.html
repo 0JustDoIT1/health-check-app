@@ -1,8 +1,46 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}
+<title>{{data.created_at.strftime('%Y-%m-%d')}} 건강검진 결과</title>
+{% endblock %} {% block contents %}
+<div>
+  <h3>원본 데이터</h3>
 
-{% block title %}
-    <title>{{data.created_at.strftime('%Y-%m-%d')}} 건강검진 결과</title>
-{% endblock %}
+  {% for key, value in data.items() %}
 
-{% block contents %}
+  {% set meta = schema.get(key) %}
+
+  {% if meta %}
+
+    <div style="background-color: {{ result_labels.get(key, {}).get('color_hex', '#ffffff') }};">
+      {{ meta.label }} :
+
+      {% if meta.type == "num" %}
+        {{ value }} <small>{{ meta.unit or "" }}</small>
+
+      {% elif meta.type == "category" %}
+        {{ meta.classes.get(value, value) }}
+
+      {% else %}
+        {{ value }}
+      {% endif %}
+    </div>
+
+  {% endif %}
+
+{% endfor %}
+</div>
+
+<div>
+  <h3>검사 결과</h3>
+
+  {% for key, item in result_labels.items() %}
+  <div>
+    항목: {{ schema[key] }} / 값: {{ item.value }} / 상태: {{ item.status }} /
+    위험도: {{ item.risk_level }}
+  </div>
+  {% endfor %}
+</div>
+
+<div>건강 점수: {{ score }}점</div>
+
+<div>등급: {{ grade }}</div>
 {% endblock %}

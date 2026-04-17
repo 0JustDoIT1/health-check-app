@@ -4,6 +4,7 @@ from routes.auth import auth_bp
 import os
 from datetime import timedelta
 from dao.auth_decorators import checkSignIn
+from dao.health_dao import getLatestHealthData
 
 app = Flask(__name__)
 
@@ -14,10 +15,13 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=1)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(health_bp, url_prefix="/health")
 
+# 메인(대시보드) 페이지
 @app.route("/")
 @checkSignIn
 def home():
-    return render_template("index.html", page_title="Dashboard")
+    # 로그인한 사람의 가장 최근 검사결과
+    data = getLatestHealthData()
+    return render_template("index.html", page_title="Dashboard", data=data)
 
 if __name__ == "__main__":
     app.run(debug=True)

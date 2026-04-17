@@ -28,13 +28,10 @@ def signInModule(request):
     if not user:
         return None
     
-    print("!!!", user)
-    
     try:
         ph.verify(user["password"], password)
         return user
     except Exception as e:
-        print("###", e)
         return None
 
 # 이메일 중복 확인

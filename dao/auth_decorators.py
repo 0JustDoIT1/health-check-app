@@ -8,3 +8,11 @@ def checkSignIn(f):
             return redirect(url_for("auth.signIn"))
         return f(*args, **kwargs)
     return wrapper
+
+def checkGuest(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "user_id" in session:
+            return redirect(url_for('home'))  # 또는 dashboard
+        return f(*args, **kwargs)
+    return wrapper

@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash
 from db.connection import getConnection
 import pymysql
+from constants.health import BASE_SCORE, HEALTH_SCHEMA
+from dao.health_dao import getGrade
+from dao.auth_decorators import checkSignIn
 
 health_bp = Blueprint('health', __name__)
 
@@ -136,7 +139,120 @@ def create_health_record():
 #----------------------------------------------------------------------- #
 #--------------------------------허병철-------------------------- #
 # ---------------------------------------------------------------------- #
+
+# 건강검진 결과(by id) 업데이트
+@health_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
+@checkSignIn
+def edit_health_record(id):
+    db = getConnection()
+    cursor = db.cursor()
+
+    if request.method == 'GET':
+        cursor.execute("SELECT * FROM health_result WHERE id = %s", (id,))
+        data = cursor.fetchone()
+        cursor.close()
+        db.close()
+        return render_template('health/check.html', data=data, mode="edit")
+
+    try:
+        data = {
+            'id': id,
+            'name': request.form.get('name'),
+            'age': int(request.form.get('age')),
+            'height': float(request.form.get('height')),
+            'weight': float(request.form.get('weight')),
+            'bmi': float(request.form.get('BMI')),
+            'waist': float(request.form.get('waist')),
+            'vision_left': float(request.form.get('vision_left')),
+            'vision_right': float(request.form.get('vision_right')),
+            'hearing_left': int(request.form.get('hearing_left')),
+            'hearing_right': int(request.form.get('hearing_right')),
+            'systolic_bp': int(request.form.get('systolic_bp')),
+            'diastolic_bp': int(request.form.get('diastolic_bp')),
+            'fasting_glucose': int(request.form.get('fasting_glucose')),
+            'hemoglobin': float(request.form.get('hemoglobin')),
+            'creatinine': float(request.form.get('creatinine')),
+            'eGFR': float(request.form.get('eGFR')),
+            'urine_protein': int(request.form.get('urine_protein')),
+            'ast': int(request.form.get('AST')),
+            'alt': int(request.form.get('ALT')),
+            'rGTP': int(request.form.get('rGTP')),
+            'xray': int(request.form.get('xray')),
+            'dental': int(request.form.get('dental_exam'))
+        }
+
+        sql = """
+            UPDATE health_result SET
+                name=%(name)s,
+                age=%(age)s,
+                height=%(height)s,
+                weight=%(weight)s,
+                BMI=%(bmi)s,
+                waist=%(waist)s,
+                vision_left=%(vision_left)s,
+                vision_right=%(vision_right)s,
+                hearing_left=%(hearing_left)s,
+                hearing_right=%(hearing_right)s,
+                systolic_bp=%(systolic_bp)s,
+                diastolic_bp=%(diastolic_bp)s,
+                fasting_glucose=%(fasting_glucose)s,
+                hemoglobin=%(hemoglobin)s,
+                creatinine=%(creatinine)s,
+                eGFR=%(eGFR)s,
+                urine_protein=%(urine_protein)s,
+                AST=%(ast)s,
+                ALT=%(alt)s,
+                rGTP=%(rGTP)s,
+                xray=%(xray)s,
+                dental_exam=%(dental)s
+            WHERE id=%(id)s
+        """
+
+        cursor.execute(sql, data)
+        db.commit()
+
+        flash("수정 완료!")
+        return redirect(url_for('health.health_detail', id=id))
+
+    except Exception as e:
+        db.rollback()
+        flash(f"수정 실패: {e}")
+        return redirect(url_for('health.edit_health_record', id=id))
+
+    finally:
+        cursor.close()
+        db.close()
+
+# 건강검진 결과(by id) 삭제
+@health_bp.route('/delete/<int:id>', methods=['POST'])
+@checkSignIn
+def delete_health_record(id):
+
+    db = getConnection()
+    cursor = db.cursor()
+
+    try:
+        cursor.execute("""
+            DELETE FROM health_result
+            WHERE id = %s
+        """, (id,))
+
+        db.commit()
+        flash("삭제 완료!")
+
+    except Exception as e:
+        db.rollback()
+        flash(f"삭제 실패: {e}")
+
+    finally:
+        cursor.close()
+        db.close()
+
+    return redirect(url_for('health.getHealthList'))
+
+# 건강검진 결과 하나(by id) 조회
 @health_bp.route("/list/<int:id>", methods=["GET"])
+@checkSignIn
 def healthDetail(id):
 
     conn = getConnection()
@@ -144,12 +260,129 @@ def healthDetail(id):
     
     cursor.execute("""
         SELECT * FROM health_result WHERE id = %s
-    """, (id,))
-    
+    """,
+    (id,)
+    )
     data = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT * FROM health_risk
+    """)
+    risk_rules = cursor.fetchall()
     
     cursor.close()
     conn.close()
 
-    # 3. DB 저장 or 결과 반환
-    return render_template("health/detail.html", data=data)
+    result_labels = {}
+    score = BASE_SCORE
+
+    for rule in risk_rules:
+
+        item = rule["item_name"]
+
+        # 1. 그룹 확장
+        if item == "vision":
+            targets = ["vision_left", "vision_right"]
+        elif item == "hearing":
+            targets = ["hearing_left", "hearing_right"]
+        else:
+            targets = [item]
+
+        min_v = rule["min_value"]
+        max_v = rule["max_value"]
+        status = rule["status"]
+        gender = rule["gender"]
+        risk = rule["risk_level"]
+        color = rule["color_hex"]
+
+        # 2. 각 target 개별 검사
+        for t in targets:
+            value = data.get(t)
+
+            if value is None:
+                continue
+
+            if gender != "all" and gender != data["gender"]:
+                continue
+
+            if min_v <= value <= max_v:
+                result_labels[t] = {
+                    "value": value,
+                    "status": status,
+                    "risk_level": risk,
+                    "base_item": item,
+                    "color_hex": color
+                }
+                score -= risk
+        
+    grade = getGrade(score)
+
+    # 3. 결과 반환
+    return render_template("health/detail.html", data=data, schema=HEALTH_SCHEMA, result_labels=result_labels, score=score, grade=grade)
+
+# 건강검진 결과 리스트(by user_id)
+@health_bp.route("/list", methods=["GET"])
+@checkSignIn
+def getHealthList():
+    user_id = session.get("user_id")
+
+    # query params
+    page = int(request.args.get("page", 1))
+    per_page = 10
+
+    year = request.args.get("year")  # ex) 2026
+    sort = request.args.get("sort", "desc")  # asc | desc
+
+    offset = (page - 1) * per_page
+
+    conn = getConnection()
+    cur = conn.cursor()
+
+    # 기본 쿼리
+    base_query = """
+        FROM health_result
+        WHERE user_id = %s
+    """
+
+    params = [user_id]
+
+    # 🔥 연도 필터
+    if year:
+        base_query += " AND YEAR(created_at) = %s"
+        params.append(year)
+
+    # 정렬
+    order_query = " ORDER BY created_at DESC"
+    if sort == "asc":
+        order_query = " ORDER BY created_at ASC"
+
+    # 데이터 조회
+    data_query = f"""
+        SELECT *
+        {base_query}
+        {order_query}
+        LIMIT %s OFFSET %s
+    """
+
+    cur.execute(data_query, params + [per_page, offset])
+    rows = cur.fetchall()
+
+    # 전체 개수 (페이지네이션용)
+    count_query = f"""
+        SELECT COUNT(*)
+        {base_query}
+    """
+
+    cur.execute(count_query, params)
+
+    total_count = cur.fetchone()["COUNT(*)"]
+    total_pages = (total_count + per_page - 1) // per_page
+
+    return render_template(
+        "health/list.html",
+        rows=rows,
+        page=page,
+        total_pages=total_pages,
+        year=year,
+        sort=sort
+    )

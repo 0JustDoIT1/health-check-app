@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from dao.auth_dao import signInModule, signUpModule
 from constants.auth import SIGNUP_SUCCESS, SIGNUP_DUPLICATE, SIGNUP_ERROR, SIGNUP_EMAIL, SIGNUP_PASSWORD
-
+from dao.auth_decorators import checkGuest
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route("/signin", methods=["GET", "POST"])
+@checkGuest
 def signIn():
     if request.method == "POST":
         user = signInModule(request)
@@ -17,12 +18,13 @@ def signIn():
         session["email"] = user["email"]
         session.permanent = True
         
-        return redirect("/")
+        return redirect(url_for('home'))
     
     # GET 요청이면 로그인 폼 보여주기
     return render_template("auth/signIn.html")
 
 @auth_bp.route("/signup", methods=["GET", "POST"])
+@checkGuest
 def signUp():
     if request.method == "POST":
         result = signUpModule(request)

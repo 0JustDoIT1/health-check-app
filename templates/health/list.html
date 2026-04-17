@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>건강검진 리스트</title>
+{% endblock %}
+
+{% block contents %}
+
+<div class="container mt-4">
+
+  <!-- 🔍 필터 영역 -->
+  <form method="GET" class="mb-3 d-flex gap-2">
+
+    <!-- 연도 필터 -->
+    <input
+      type="number"
+      name="year"
+      value="{{ year or '' }}"
+      placeholder="연도 (ex 2026)"
+      class="form-control"
+      style="max-width: 150px;"
+    >
+
+    <!-- 정렬 -->
+    <select name="sort" class="form-control" style="max-width: 150px;">
+      <option value="desc" {% if sort == 'desc' %}selected{% endif %}>최신순</option>
+      <option value="asc" {% if sort == 'asc' %}selected{% endif %}>오래된순</option>
+    </select>
+
+    <button class="btn btn-primary">검색</button>
+  </form>
+
+  <!-- 📋 리스트 -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>번호</th>
+        <th>날짜</th>
+        <th>혈압</th>
+        <th>혈당</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.id }}</td>
+        <td>{{ row.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>{{ row.systolic_bp }}/{{ row.diastolic_bp }}</td>
+        <td>{{ row.fasting }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 📄 페이지네이션 -->
+  <nav>
+    <ul class="pagination justify-content-center">
+
+      <!-- 이전 -->
+      <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+        <a class="page-link"
+           href="?page={{ page - 1 }}&year={{ year or '' }}&sort={{ sort }}">
+          이전
+        </a>
+      </li>
+
+      <!-- 페이지 번호 -->
+      {% for p in range(1, total_pages + 1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link"
+           href="?page={{ p }}&year={{ year or '' }}&sort={{ sort }}">
+          {{ p }}
+        </a>
+      </li>
+      {% endfor %}
+
+      <!-- 다음 -->
+      <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+        <a class="page-link"
+           href="?page={{ page + 1 }}&year={{ year or '' }}&sort={{ sort }}">
+          다음
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+
+</div>
+
+{% endblock %}

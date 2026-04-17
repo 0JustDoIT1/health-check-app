@@ -1,0 +1,62 @@
+body {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+/* 전체 중앙 정렬 */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* 카드 */
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* 카드 내부 */
+.auth-body {
+    padding: 40px;
+}
+
+/* flash (이미 있는 거 유지) */
+.flash-message {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 12px 20px;
+    border-radius: 8px;
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+
+/* Parsley error list */
+.parsley-errors-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: #e74a3b;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* input error border */
+input.parsley-error {
+  border: 1px solid #e74a3b !important;
+  box-shadow: 0 0 0 0.15rem rgba(231, 74, 59, 0.15);
+}
+
+/* input success */
+input.parsley-success {
+  border: 1px solid #1cc88a !important;
+  box-shadow: 0 0 0 0.15rem rgba(28, 200, 138, 0.15);
+}

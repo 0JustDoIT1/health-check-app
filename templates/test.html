@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Health Check</title>
+{% endblock %}
+
+{% block contents %}
+<form method="POST" action="/health/add">
+
+    <!-- 기본 -->
+    <input class="form-control mb-2" name="name" placeholder="이름">
+    <input class="form-control mb-2" name="age" placeholder="나이">
+    <input class="form-control mb-2" name="gender" placeholder="성별">
+
+    <!-- 신체 -->
+    <input class="form-control mb-2" name="height" placeholder="키 (cm)">
+    <input class="form-control mb-2" name="weight" placeholder="몸무게 (kg)">
+    <input class="form-control mb-2" name="waist" placeholder="허리둘레">
+
+    <!-- 시력 -->
+    <input class="form-control mb-2" name="vision_left" placeholder="시력(좌)">
+    <input class="form-control mb-2" name="vision_right" placeholder="시력(우)">
+
+    <!-- 청력 -->
+    <input class="form-control mb-2" name="hearing_left" placeholder="청력(좌)">
+    <input class="form-control mb-2" name="hearing_right" placeholder="청력(우)">
+
+    <!-- 혈압 -->
+    <input class="form-control mb-2" name="systolic_bp" placeholder="수축기 혈압">
+    <input class="form-control mb-2" name="diastolic_bp" placeholder="이완기 혈압">
+
+    <!-- 혈액 -->
+    <input class="form-control mb-2" name="hemoglobin" placeholder="혈색소">
+    <input class="form-control mb-2" name="fasting_glucose" placeholder="공복혈당">
+
+    <!-- 신장 -->
+    <input class="form-control mb-2" name="creatinine" placeholder="크레아티닌">
+    <input class="form-control mb-2" name="eGFR" placeholder="eGFR">
+
+    <!-- 간 -->
+    <input class="form-control mb-2" name="AST" placeholder="AST">
+    <input class="form-control mb-2" name="ALT" placeholder="ALT">
+    <input class="form-control mb-2" name="rGTP" placeholder="rGTP">
+
+    <!-- 상태값 (0/1/2) -->
+    <input class="form-control mb-2" name="urine_protein" placeholder="요단백 (0/1/2)">
+    <input class="form-control mb-2" name="xray" placeholder="X-ray (0/1/2)">
+    <input class="form-control mb-2" name="dental_exam" placeholder="구강검진 (0/1/2)">
+
+    <button class="btn btn-primary w-100 mt-3">저장</button>
+</form>
+{% endblock %}

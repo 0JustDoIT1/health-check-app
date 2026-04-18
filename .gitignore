@@ -58,3 +58,6 @@ nosetests.xml
 coverage.xml
 *.cover
 *.hypothesis/
+
+# Ignore Google Cloud credentials
+health-ocr/vision-key.json

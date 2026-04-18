@@ -1,91 +1,175 @@
 {% extends "base.html" %}
 
 {% block title %}
-<title>건강검진 리스트</title>
+<title>내 건강검진 결과 조회</title>
+<link href="{{ url_for('static', filename='css/list.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block contents %}
 
-<div class="container mt-4">
+<div class="col-12">
+  <div class="health-list-page">
 
-  <!-- 🔍 필터 영역 -->
-  <form method="GET" class="mb-3 d-flex gap-2">
+    <div class="page-header">
+      <h1>내 건강검진 결과 조회</h1>
+      <p>등록된 건강검진 결과를 확인하고, 원하는 기록의 상세 내용을 조회할 수 있습니다.</p>
+    </div>
 
-    <!-- 연도 필터 -->
-    <input
-      type="number"
-      name="year"
-      value="{{ year or '' }}"
-      placeholder="연도 (ex 2026)"
-      class="form-control"
-      style="max-width: 150px;"
-    >
+    <!-- 필터 -->
+    <div class="filter-box">
+      <form method="GET" id="filterForm" class="filter-form">
+        <div class="filter-left">
+          <label class="filter-label"><i class="fa fa-calendar"></i></label>
 
-    <!-- 정렬 -->
-    <select name="sort" class="form-control" style="max-width: 150px;">
-      <option value="desc" {% if sort == 'desc' %}selected{% endif %}>최신순</option>
-      <option value="asc" {% if sort == 'asc' %}selected{% endif %}>오래된순</option>
-    </select>
+          <select name="year" id="year" class="filter-select">
+            <option value="">전체</option>
+            {% for y in range(2026, 1999, -1) %}
+              <option value="{{ y }}" {% if year == y|string %}selected{% endif %}>
+                {{ y }}년
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <button class="btn btn-primary">검색</button>
-  </form>
+        <div class="filter-right">
+          <!-- <button type="submit" class="health-btn health-btn-search">
+            조회
+          </button> -->
+          <input type="hidden" name="sort" id="sortInput" value="{{ sort or 'desc' }}">
+          <button type="button" id="sortToggle" class="sort-btn">
+            {% if sort == 'asc' %}오래된순{% else %}최신순{% endif %}
+          </button>
+          <a href="{{ url_for('health.create_health_record') }}" class="health-btn health-btn-add">
+            + 검사결과 등록
+          </a>
+        </div>
+      </form>
+    </div>
 
-  <!-- 📋 리스트 -->
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>번호</th>
-        <th>날짜</th>
-        <th>혈압</th>
-        <th>혈당</th>
-      </tr>
-    </thead>
+    <!-- 결과 -->
+    <div class="result-section">
+      <div class="table-card">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>검진일</th>
+              <th>이름</th>
+              <th>성별</th>
+              <th>생년월일</th>
+              <th>키</th>
+              <th>몸무게</th>
+              <th>전체등급</th>
+              <th>상세보기</th>
+            </tr>
+          </thead>
 
-    <tbody>
-      {% for row in rows %}
-      <tr>
-        <td>{{ row.id }}</td>
-        <td>{{ row.created_at.strftime('%Y-%m-%d') }}</td>
-        <td>{{ row.systolic_bp }}/{{ row.diastolic_bp }}</td>
-        <td>{{ row.fasting }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          <tbody>
+            {% if rows %}
+              {% for row in rows %}
+              <tr>
+                <!-- 검진일 -->
+                <td>{{ row.exam_date.strftime('%Y.%m.%d') }}</td>
 
-  <!-- 📄 페이지네이션 -->
-  <nav>
-    <ul class="pagination justify-content-center">
+                <!-- 이름 -->
+                <td>{{ row.name }}</td>
 
-      <!-- 이전 -->
-      <li class="page-item {% if page <= 1 %}disabled{% endif %}">
-        <a class="page-link"
-           href="?page={{ page - 1 }}&year={{ year or '' }}&sort={{ sort }}">
-          이전
-        </a>
-      </li>
+                <!-- 성별 -->
+                <td>{{ schema.gender.classes.get(row.gender, '-') }}</td>
 
-      <!-- 페이지 번호 -->
-      {% for p in range(1, total_pages + 1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link"
-           href="?page={{ p }}&year={{ year or '' }}&sort={{ sort }}">
-          {{ p }}
-        </a>
-      </li>
-      {% endfor %}
+                <!-- 생년월일 -->
+                <td>{{ row.birth_date.strftime('%Y.%m.%d') }}</td>
 
-      <!-- 다음 -->
-      <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
-        <a class="page-link"
-           href="?page={{ page + 1 }}&year={{ year or '' }}&sort={{ sort }}">
-          다음
-        </a>
-      </li>
+                <!-- 키 -->
+                <td>{{ row.height }}{{ schema.height.unit or 'cm' }}</td>
 
-    </ul>
-  </nav>
+                <!-- 몸무게 -->
+                <td>{{ row.weight }}{{ schema.weight.unit or 'kg' }}</td>
 
+                <!-- 등급 -->
+                <td>
+                  <span class="grade-badge grade-{{ row.grade[0]|lower if row.grade else '-' }} fw-bold">
+                    {{ row.grade or '-' }}
+                  </span>
+                </td>
+
+                <!-- 상세보기 -->
+                <td>
+                  <a href="{{ url_for('health.healthDetail', id = row.id) }}" class="detail-btn">
+                    보기
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="9" style="padding:40px; text-align:center; color:#6b7280;">
+                  등록된 건강검진 결과가 없습니다.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if rows and total_pages > 0 %}
+        <div class="pagination">
+          <!-- 이전 -->
+          {% if page > 1 %}
+            <a href="{{ url_for('health.getHealthList', page=page-1, year=year, sort=sort) }}"
+              class="page-btn">
+              &lt;
+            </a>
+          {% else %}
+            <span class="page-btn disabled">&lt;</span>
+          {% endif %}
+
+          <!-- 페이지 -->
+          {% for p in range(1, total_pages + 1) %}
+            <a href="{{ url_for('health.getHealthList', page=p, year=year, sort=sort) }}"
+              class="page-btn {% if p == page %}active{% endif %}">
+              {{ p }}
+            </a>
+          {% endfor %}
+
+          <!-- 다음 -->
+          {% if page < total_pages %}
+            <a href="{{ url_for('health.getHealthList', page=page+1, year=year, sort=sort) }}"
+              class="page-btn">
+              &gt;
+            </a>
+          {% else %}
+            <span class="page-btn disabled">&gt;</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
 </div>
+<script>
+  const form = document.getElementById('filterForm');
+  const year = document.getElementById('year');
+  const sortInput = document.getElementById('sortInput');
+  const sortToggle = document.getElementById('sortToggle');
 
+  // 1. 연도 변경 → 자동 submit + sort desc로 초기화
+  year.addEventListener('change', () => {
+    sortInput.value = 'desc';
+    form.submit();
+  });
+
+  // 2. 정렬 토글 버튼
+  sortToggle.addEventListener('click', () => {
+    if (sortInput.value === 'desc') {
+      sortInput.value = 'asc';
+      sortToggle.innerText = '오래된순';
+    } else {
+      sortInput.value = 'desc';
+      sortToggle.innerText = '최신순';
+    }
+
+    form.submit();
+  });
+</script>
 {% endblock %}

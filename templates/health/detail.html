@@ -1,46 +1,324 @@
-{% extends "base.html" %} {% block title %}
-<title>{{data.created_at.strftime('%Y-%m-%d')}} 건강검진 결과</title>
-{% endblock %} {% block contents %}
-<div>
-  <h3>원본 데이터</h3>
+{% extends "base.html" %}
 
-  {% for key, value in data.items() %}
+{% block title %}
+<title>건강검진 상세 결과</title>
+<link href="{{ url_for('static', filename='css/detail.css') }}" rel="stylesheet">
+{% endblock %}
 
-  {% set meta = schema.get(key) %}
+{% block contents %}
+  <div class="col-12">
+    <div id="captureArea" class="health-detail-page">
 
-  {% if meta %}
+      <!-- HEADER -->
+      <div class="detail-header">
+        <div>
+          <h1>건강검진 상세 결과</h1>
+          <p>선택한 건강검진 결과의 상세 정보를 확인할 수 있습니다.</p>
+        </div>
+        <div class="summary-actions">
+          <button type="button" class="action-btn mr-4" onclick="saveAsImage()">
+            <i class="fas fa-image mr-1"></i>이미지 저장
+          </button>
 
-    <div style="background-color: {{ result_labels.get(key, {}).get('color_hex', '#ffffff') }};">
-      {{ meta.label }} :
+          <button type="button" class="action-btn" onclick="saveAsPDF()">
+            <i class="fas fa-file-pdf mr-1"></i>PDF 저장
+          </button>
+        </div>
+      </div>
 
-      {% if meta.type == "num" %}
-        {{ value }} <small>{{ meta.unit or "" }}</small>
+      <!-- BASIC INFO -->
+      <div class="info-card">
+        <h3 class="section-title">기본정보</h3>
 
-      {% elif meta.type == "category" %}
-        {{ meta.classes.get(value, value) }}
+        <div class="row mb-2">
+          
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">검진 일자</span>
+              <span class="info-value">{{ data.exam_date.strftime('%Y.%m.%d') if data and data.exam_date else '-' }}</span>
+            </div>
+          </div>
 
-      {% else %}
-        {{ value }}
-      {% endif %}
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">이름</span>
+              <span class="info-value">{{ data.name }}</span>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">생년월일</span>
+              <span class="info-value">{{ data.birth_date.strftime('%Y.%m.%d') if data and data.birth_date else '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 성별, 키, 몸무게는 세 개의 열로 배치 -->
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">성별</span>
+              <span class="info-value">
+                {% if data.gender == 'male' %}남성{% else %}여성{% endif %}
+              </span>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">키</span>
+              <span class="info-value">{{ data.height if data and data.height else '-' }} cm</span>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="info-item">
+              <span class="info-label">몸무게</span>
+              <span class="info-value">{{ data.weight if data and data.weight else '-' }} kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="mt-4 category-box status-{{ data.grade[0]|lower if data.grade else '-' }}">
+          <div class="category-header">
+            <div class="category-title">
+              건강검진 등급 및 총평
+            </div>
+            <div class="detail-badge detail-{{ data.grade[0]|lower if data.grade else '-' }}">
+              {{ ui_context.grade[data.grade].label }}
+            </div>
+          </div>
+          <div class="category-desc d-flex justify-content-between align-items-center">
+            <div>
+              {{ ui_context.grade[data.grade].texts[(range(3) | random)] }}
+            </div>
+            <div>
+              총 {{ data.score }}점
+            </div>
+          </div>
+        </div>
+        <div class="w-100 d-flex justify-content-center my-4">
+          <button class="icon-btn" onclick="toggleCategory()">
+            <i class="fas fa-chevron-down" id="arrowIcon"></i>
+          </button>
+        </div>
+
+        <!-- 카테고리 영역 -->
+        <div class="category-wrap" id="categoryWrap">
+          {% for key, value in category_summary.items() %}
+            <div class="category-box status-{{ value.status }}">
+              <div class="category-header">
+                <div class="category-title">
+                  {{ ui_context.category.text[key] }}
+                </div>
+              </div>
+              <div class="category-desc">
+                {{ ui_context.category.report[key][value.status] }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- DETAIL TABLE -->
+      <div class="info-card">
+        <h3 class="section-title">항목별 건강검진 결과</h3>
+
+        <div class="table-card">
+          <table class="detail-table">
+
+            <thead>
+              <tr>
+                <th>항목명</th>
+                <th>수치</th>
+                <th>정상 구간</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for key, item in ui_context.schema.items() %}
+                {% if key not in ['name', 'age', 'gender', 'height', 'weight'] and data[key] is defined %}
+                  {% set label = result_labels.get(key) %}
+                  <tr style="background-color: {{ label.color_hex if label else '#ffffff' }};">
+                    <td class="key-text">{{ ui_context.schema[key].label }}</td> <!-- 항목의 label을 HEALTH_ui_context.schema에서 가져옴 -->
+                    <td class="value-text">
+                      {% if ui_context.schema[key].type == "num" %}
+                        {{ data[key] }}{{ ui_context.schema[key].unit | default('') }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if ui_context.schema[key].type == "num" %}
+                        {{ normal_data[key].min_value }} ~ {{ normal_data[key].max_value }} {{ ui_context.schema[key].unit | default('') }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      {{ label.status }}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+
+        <div class="sub-actions">
+          <a href="/health/list" class="action-btn action-btn-save">
+            <i class="fas fa-arrow-left mr-1"></i>목록으로
+          </a>
+          <div>
+            <button type="button" class="action-btn action-btn-edit"
+                onclick="location.href='{{ url_for('health.edit_health_record', id=data.id) }}'">
+              <i class="fas fa-edit mr-1"></i>수정
+            </button>
+            <button type="button" class="action-btn action-btn-delete" onclick="confirmDelete()">
+              <i class="fas fa-trash-alt mr-1"></i>삭제
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
-  {% endif %}
+          <div class="modal-header">
+            <h5 class="modal-title font-weight-bold">삭제 확인</h5>
 
-{% endfor %}
-</div>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
 
-<div>
-  <h3>검사 결과</h3>
+          </div>
 
-  {% for key, item in result_labels.items() %}
-  <div>
-    항목: {{ schema[key] }} / 값: {{ item.value }} / 상태: {{ item.status }} /
-    위험도: {{ item.risk_level }}
+          <div class="modal-body">
+            정말 삭제하시겠습니까? <br>
+            삭제 후 복구할 수 없습니다.
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              취소
+            </button>
+
+            <button type="button" id="deleteConfirmBtn" class="btn btn-danger">
+              <i class="fas fa-trash-alt mr-1"></i>삭제
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
-  {% endfor %}
-</div>
 
-<div>건강 점수: {{ score }}점</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<div>등급: {{ grade }}</div>
+  <script>
+    function confirmDelete() {
+      const id = {{ data.id }};
+
+      $("#deleteModal").modal("show");
+
+      // 삭제 버튼 클릭 시 POST 전송
+      document.getElementById("deleteConfirmBtn").onclick = function () {
+        fetch(`/health/delete/${id}`, {
+          method: "POST"
+        })
+        .then(res => {
+          if (res.redirected) {
+            window.location.href = res.url;
+          } else {
+            location.reload();
+          }
+        });
+      };
+    }
+
+    function toggleCategory() {
+      const wrap = document.getElementById("categoryWrap");
+      const iconBtn = document.querySelector(".icon-btn");
+
+      wrap.classList.toggle("open");
+      iconBtn.classList.toggle("open");
+    }
+
+    async function makeCanvas() {
+      const target = document.getElementById("captureArea");
+
+      document.body.classList.add("exporting");
+
+      const canvas = await html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false
+      });
+
+      document.body.classList.remove("exporting");
+      return canvas;
+    }
+
+    async function saveAsImage() {
+      const canvas = await makeCanvas();
+      const image = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = "건강검진_상세결과.png";
+      link.click();
+    }
+
+    async function saveAsPDF() {
+      const canvas = await makeCanvas();
+      const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf;
+
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      const margin = 1;
+      const scaleDown = 1;
+
+      const usableWidth = pageWidth - (margin * 2);
+      const usableHeight = pageHeight - (margin * 2);
+
+      const imgWidth = usableWidth * scaleDown;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      const x = (pageWidth - imgWidth) / 2;
+
+      if (imgHeight <= usableHeight) {
+          pdf.addImage(imgData, "PNG", x, margin, imgWidth, imgHeight);
+      } else {
+          let heightLeft = imgHeight;
+          let position = margin;
+          let page = 1;
+
+          pdf.addImage(imgData, "PNG", x, position, imgWidth, imgHeight);
+          heightLeft -= usableHeight;
+
+          while (heightLeft > 0) {
+              pdf.addPage();
+              page++;
+
+              position = margin - (usableHeight * (page - 1));
+
+              pdf.addImage(imgData, "PNG", x, position, imgWidth, imgHeight);
+              heightLeft -= usableHeight;
+          }
+      }
+
+      pdf.save("건강검진_상세결과.pdf");
+    }
+  </script>
+
 {% endblock %}

@@ -1,52 +1,187 @@
-{% extends "index.html" %} {% block content %}
+{% extends "base.html" %}
+{% block title %}
+<title>{{page_title}}</title>
+{% endblock %}
+{% block contents %}
+<style>
+    /* 상단 선택창 디자인 */
+    .selector-card { background: #fff; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    .custom-select-lg { height: 50px; font-size: 1.1rem; border-radius: 10px; border: 2px solid #e3e6f0; transition: 0.3s; cursor: pointer; }
+    .custom-select-lg:focus { border-color: #4e73df; box-shadow: none; }
+
+    /* 가로 막대 리포트 디자인 */
+    .metric-row { display: flex; align-items: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px dashed #edf0f5; }
+    .metric-name { width: 140px; font-weight: 700; color: #4a4e69; font-size: 0.95rem; }
+    
+    /* 막대 컨테이너 (정상 범위 포함) */
+    .metric-bar-container { 
+        flex-grow: 1; height: 26px; background: #f1f3f9; border-radius: 13px; 
+        position: relative; margin: 0 20px; overflow: visible; 
+    }
+    
+    /* 정상 범위 (Safe Zone) - 연한 초록색 배경 */
+    .safe-zone { 
+        position: absolute; height: 100%; background: rgba(28, 200, 138, 0.15); 
+        border-left: 1px solid rgba(28, 200, 138, 0.3); border-right: 1px solid rgba(28, 200, 138, 0.3);
+        z-index: 1; 
+    }
+
+    /* 내 데이터 막대 */
+    .user-bar { 
+        position: absolute; height: 100%; border-radius: 13px; z-index: 3;
+        transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 연령대 평균 마커 (검은색 핀) */
+    .avg-marker { 
+        position: absolute; top: -5px; width: 4px; height: 36px; 
+        background: #2c3e50; z-index: 4; border-radius: 2px;
+    }
+    .avg-marker::after {
+        content: '평균'; position: absolute; top: -18px; left: -10px;
+        font-size: 10px; color: #2c3e50; white-space: nowrap; font-weight: bold;
+    }
+
+    .metric-value { width: 110px; text-align: right; font-size: 0.95rem; }
+    .metric-value strong { color: #333; font-size: 1.1rem; }
+
+    /* 범례 */
+    .legend-box { display: flex; gap: 15px; font-size: 0.85rem; justify-content: flex-end; margin-bottom: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+</style>
+
 <div class="container-fluid">
-  <h1 class="h3 mb-4 text-gray-800">연령대별 건강 비교</h1>
-
-  <div class="card shadow mb-4">
-    <div class="card-body">
-      <h4 class="small font-weight-bold">
-        내 신체 나이 분석 <span class="float-right">{{ body_age }}세</span>
-      </h4>
-      <div class="progress mb-4" style="height: 25px">
-        <div
-          class="progress-bar bg-info"
-          role="progressbar"
-          style="width: {{ (body_age / my_data.age) * 100 }}%"
-        >
-          분석된 신체 나이: {{ body_age }}세
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="selector-card p-4">
+                <label class="font-weight-bold text-primary mb-2"><i class="fas fa-search-plus mr-1"></i> 분석할 검진 기록을 선택하세요</label>
+                <select class="form-control custom-select-lg" id="recordSelector" onchange="renderHorizontalReport(this.value)">
+                    {% for r in records %}
+                    <option value="{{ loop.index0 }}">{{ r.formatted_date }} 검진 결과 리포트</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-      </div>
-      <p class="text-center">
-        "정범 님의 신체 나이는 실제 나이({{ my_data.age }}세)보다
-        <strong>{{ my_data.age - body_age }}세</strong> 젊습니다!"
-      </p>
     </div>
-  </div>
 
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-success">연령대별 평균 체중 비교</h6>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary" id="reportTitle">상세 건강 분석</h6>
+                    <div class="legend-box">
+                        <div class="legend-item"><span style="width:12px; height:12px; background:rgba(28, 200, 138, 0.2); border:1px solid rgba(28,200,138,0.5); display:inline-block;"></span> 정상범위</div>
+                        <div class="legend-item"><span style="width:3px; height:12px; background:#2c3e50; display:inline-block;"></span> 연령대 평균</div>
+                    </div>
+                </div>
+                <div class="card-body px-5" id="reportContent">
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-      <div class="chart-bar"><canvas id="ageBarChart"></canvas></div>
-    </div>
-  </div>
 </div>
 
 <script>
-  const ageData = {{ age_data | tojson }};
-  const ctx = document.getElementById('ageBarChart');
-  new Chart(ctx, {
-      type: 'bar',
-      data: {
-          labels: ageData.map(d => d.age_group + "대"),
-          datasets: [{
-              label: "평균 체중 (kg)",
-              data: ageData.map(d => d.avg_w),
-              backgroundColor: "#1cc88a"
-          }]
-      },
-      options: { maintainAspectRatio: false }
-  });
+    // 📌 백엔드에서 에러 없이 완벽하게 변환해 준 데이터를 사용합니다.
+    const userRecords = {{ safe_records | safe }};
+    const avgData = {{ safe_avg | safe }} || {};
+
+    console.log("내가 가진 기록들:", userRecords);
+    console.log("동일 연령대 평균 수치:", avgData);
+
+    // 📌 전체 15개 막대 그래프 항목 (정상범위가 없는 항목은 min, max 생략)
+    const metrics = [
+        { label: "키", col: "height", avg: null, unit: "cm", limit: 200 },
+        { label: "몸무게", col: "weight", avg: null, unit: "kg", limit: 150 },
+        { label: "BMI", col: "BMI", avg: avgData.avg_BMI, min: 18.5, max: 24.9, unit: "kg/㎡", limit: 40 },
+        { label: "허리둘레", col: "waist", avg: 90, min: 0, max: 90, unit: "cm", limit: 120 },
+        { label: "시력(좌)", col: "vision_left", avg: 1.0, min: 0.8, max: 2.0, unit: "", limit: 2.0 },
+        { label: "시력(우)", col: "vision_right", avg: 1.0, min: 0.8, max: 2.0, unit: "", limit: 2.0 },
+        { label: "수축기 혈압", col: "systolic_bp", avg: avgData.avg_SBP, min: 90, max: 120, unit: "mmHg", limit: 200 },
+        { label: "이완기 혈압", col: "diastolic_bp", avg: avgData.avg_DBP, min: 60, max: 80, unit: "mmHg", limit: 130 },
+        { label: "공복혈당", col: "fasting_glucose", avg: avgData.avg_Glucose, min: 70, max: 100, unit: "mg/dL", limit: 250 },
+        { label: "혈색소", col: "hemoglobin", avg: 14, min: 12, max: 16, unit: "g/dL", limit: 20 },
+        { label: "크레아티닌", col: "creatinine", avg: 1.1, min: 0.5, max: 1.2, unit: "mg/dL", limit: 2.5 },
+        { label: "신사구체(eGFR)", col: "eGFR", avg: 60, min: 60, max: 150, unit: "mL/min", limit: 150 },
+        { label: "AST(간기능)", col: "AST", avg: avgData.avg_AST, min: 0, max: 40, unit: "U/L", limit: 150 },
+        { label: "ALT(간기능)", col: "ALT", avg: avgData.avg_ALT, min: 0, max: 40, unit: "U/L", limit: 150 },
+        { label: "r-GTP", col: "rGTP", avg: avgData.avg_rGTP, min: 0, max: 60, unit: "U/L", limit: 200 }
+    ];
+
+    function renderHorizontalReport(index) {
+        if (!userRecords || userRecords.length === 0) return;
+        const selected = userRecords[index];
+        
+        // 백틱(`) 기호를 추가하여 자바스크립트 변수가 HTML에 정상적으로 들어가게 수정했습니다.
+        document.getElementById('reportTitle').innerHTML = <i class="fas fa-file-medical-alt mr-2"></i> ${selected.formatted_date} 건강 분석 리포트 (총 18개 항목);
+        
+        const container = document.getElementById('reportContent');
+        container.innerHTML = ""; 
+
+        metrics.forEach(m => {
+            const val = parseFloat(selected[m.col]) || 0;
+            const pct = Math.min((val / m.limit) * 100, 100);
+            
+            const avgVal = m.avg ? parseFloat(m.avg) : null;
+            const avgPct = avgVal ? Math.min((avgVal / m.limit) * 100, 100) : null;
+
+            let safeZoneHtml = '';
+            let isWarning = false;
+
+            // 정상 범위(초록색 영역) 렌더링 및 위험 감지
+            if (m.min !== undefined && m.max !== undefined) {
+                const minPct = (m.min / m.limit) * 100;
+                const maxPct = (m.max / m.limit) * 100;
+                safeZoneHtml = <div class="safe-zone" style="left: ${minPct}%; width: ${maxPct - minPct}%;"></div>;
+                
+                if (val < m.min || val > m.max) isWarning = true;
+            }
+
+            // 막대 색상 결정 (위험 시 빨간색 경고)
+            let color = "linear-gradient(90deg, #4e73df, #224abe)"; 
+            if (isWarning) color = "linear-gradient(90deg, #f6c23e, #e74a3b)"; 
+
+            const row = `
+                <div class="metric-row">
+                    <div class="metric-name">${m.label}</div>
+                    <div class="metric-bar-container">
+                        ${safeZoneHtml}
+                        <div class="user-bar" style="width: ${pct}%; background: ${color};"></div>
+                        ${avgVal ? <div class="avg-marker" style="left: ${avgPct}%;"></div> : ''}
+                    </div>
+                    <div class="metric-value"><strong>${val}</strong> <small class="text-gray-500">${m.unit}</small></div>
+                </div>
+            `;
+            container.innerHTML += row;
+        });
+
+        // 📌 하단 특수 항목 3개 추가 (청력 좌/우, 요단백)
+        container.innerHTML += `
+            <div class="special-box row text-center mt-4 p-4 shadow-sm" style="background:#f8f9fc; border-radius:10px;">
+                <div class="col-4">
+                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">청력(좌)</span>
+                    <h5 class="mb-0 font-weight-bold ${selected.hearing_left == 1 ? 'text-success' : 'text-danger'}">
+                        ${selected.hearing_left == 1 ? '<i class="fas fa-check-circle mr-1"></i>정상' : '<i class="fas fa-exclamation-triangle mr-1"></i>의심'}
+                    </h5>
+                </div>
+                <div class="col-4" style="border-left: 1px solid #e3e6f0; border-right: 1px solid #e3e6f0;">
+                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">청력(우)</span>
+                    <h5 class="mb-0 font-weight-bold ${selected.hearing_right == 1 ? 'text-success' : 'text-danger'}">
+                        ${selected.hearing_right == 1 ? '<i class="fas fa-check-circle mr-1"></i>정상' : '<i class="fas fa-exclamation-triangle mr-1"></i>의심'}
+                    </h5>
+                </div>
+                <div class="col-4">
+                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">요단백</span>
+                    <h5 class="mb-0 font-weight-bold ${selected.urine_protein == 0 ? 'text-success' : 'text-danger'}">
+                        ${selected.urine_protein == 0 ? '<i class="fas fa-check-circle mr-1"></i>음성' : '<i class="fas fa-exclamation-triangle mr-1"></i>양성'}
+                    </h5>
+                </div>
+            </div>
+        `;
+    }
+
+    // 화면 로딩 시 첫 번째 검진 기록 자동 선택 및 출력
+    window.onload = () => { if(userRecords && userRecords.length > 0) renderHorizontalReport(0); };
 </script>
 {% endblock %}

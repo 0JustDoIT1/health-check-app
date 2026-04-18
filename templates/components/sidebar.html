@@ -1,11 +1,9 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-    <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('home') }}">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
-        </div>
-        <div class="sidebar-brand-text mx-3">건강검진</div>
+    <!-- Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-start" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="검진모아" style="max-height: 40px; margin-right: 10px;">
+        <div class="sidebar-brand-text mx-3">검진모아</div>
     </a>
 
     <hr class="sidebar-divider my-0">
@@ -24,18 +22,17 @@
     <div class="sidebar-heading">건강검진</div>
 
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseHealth"
-            aria-expanded="true" aria-controls="collapseHealth">
-            <i class="fas fa-fw fa-notes-medical"></i>
-            <span>건강검진</span>
+        <a class="nav-link" href="{{ url_for('health.create_health_record') }}">
+            <i class="fas fa-fw fa-plus"></i>
+            <span>건강검진 등록</span>
         </a>
+    </li>
 
-        <div id="collapseHealth" class="collapse" aria-labelledby="headingHealth" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="#">건강검진 등록</a>
-                <a class="collapse-item" href="#">결과 조회</a>
-            </div>
-        </div>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('health.getHealthList') }}">
+            <i class="fas fa-fw fa-list"></i>
+            <span>결과 조회</span>
+        </a>
     </li>
 
     <hr class="sidebar-divider">
@@ -44,18 +41,17 @@
     <div class="sidebar-heading">그래프</div>
 
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseGraph"
-            aria-expanded="true" aria-controls="collapseGraph">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>그래프</span>
+        <a class="nav-link" href="{{ url_for('health.healthTrend') }}">
+            <i class="fas fa-fw fa-chart-line"></i>
+            <span>내 건강 추이</span>
         </a>
+    </li>
 
-        <div id="collapseGraph" class="collapse" aria-labelledby="headingGraph" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="#">내 건강 추이</a>
-                <a class="collapse-item" href="#">연령대 비교</a>
-            </div>
-        </div>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('health.ageComparison') }}">
+            <i class="fas fa-fw fa-chart-pie"></i>
+            <span>연령대 비교</span>
+        </a>
     </li>
 
     <hr class="sidebar-divider d-none d-md-block">

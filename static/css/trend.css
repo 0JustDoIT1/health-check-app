@@ -1,0 +1,54 @@
+/* 페이지 기본 설정 */
+.trend-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 12px 40px;
+}
+
+.trend-header {
+  margin-bottom: 28px;
+}
+
+.trend-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #1f2937;
+}
+
+.trend-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.table-empty {
+  background: #fff;
+  border-radius: 1.1rem;
+  padding: 48px 20px;
+  text-align: center;
+  color: #6b7280;
+  box-shadow: 0 0.15rem 1.25rem rgba(58, 59, 69, 0.08);
+}
+
+.table-empty i {
+  font-size: 2.5rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.table-empty a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.table-empty a:hover {
+  background: #dbeafe;
+}

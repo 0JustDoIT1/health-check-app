@@ -5,15 +5,30 @@
     </button>
 
     <!-- Page Heading -->
-    <div class="d-flex align-items-center justify-content-start flex-grow-1">
-        <h1 class="h3 mb-0 text-gray-800">{{page_title}}</h1>
-        <!-- <a href="#" class="btn btn-primary btn-sm shadow-sm">
-            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-        </a> -->
+    <div class="d-flex align-items-center justify-content-center flex-grow-1 topbar-main-info" style="max-width: 1200px; margin: 0 auto; text-align: center;">
+        
+        {% if request.endpoint == 'home' %}
+        <!-- 메인 페이지 -->
+        <div class="topbar-welcome-text d-none d-md-flex flex-column justify-content-center">
+            <div class="topbar-welcome-title">
+                안녕하세요, {{ (session.get('user_name')) }}님 ☺️
+            </div>
+            <div class="topbar-welcome-subtitle">
+                건강검진 데이터를 등록하고 조회하며 내 건강 상태를 한눈에 관리해보세요.
+            </div>
+        </div>            
+        {% else %}
+        <!-- 서브페이지 -->
+        <div class="topbar-welcome-text d-none d-md-flex flex-column justify-content-center">
+            <div class="topbar-welcome-title">
+                💡 {{ health_tip }}
+            </div>
+        </div>
+        {% endif %}
     </div>
+    
     <!-- Topbar Navbar -->
     <ul class="navbar-nav ml-auto">
-
         <div class="topbar-divider d-none d-sm-block"></div>
 
         <!-- Nav Item - User Information -->
@@ -26,17 +41,17 @@
                 <div class="mr-2">
                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                         style="width:32px;height:32px;font-size:14px;">
-                        {{ session.get('email')[0]|upper }}
+                        {{ session.get('user_email')[0]|upper }}
                     </div>
                 </div>
 
                 <!-- user info -->
                 <div class="d-none d-lg-flex flex-column text-left mr-2">
                     <span class="text-gray-800 small font-weight-bold">
-                        {{ session.get('email').split('@')[0] }}
+                        {{ (session.get('user_name') or '').split('@')[0] }}
                     </span>
                     <span class="text-gray-500" style="font-size:11px;">
-                        {{ session.get('email') }}
+                        {{ session.get('user_email') }}
                     </span>
                 </div>
 
@@ -46,10 +61,6 @@
             <!-- Dropdown -->
             <div class="dropdown-menu dropdown-menu-right shadow border-0 animated--grow-in"
                 aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="{{ url_for('health.download_pdf', id=1) }}">
-                    <i class="fas fa-download fa-sm fa-fw mr-2 text-muted"></i>
-                    PDF 다운
-                </a>
                 <a class="dropdown-item" href="{{ url_for('auth.signOut') }}">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
                     로그아웃

@@ -1,7 +1,3 @@
-$(document).ready(function () {
-  $("form").parsley();
-});
-
 document.addEventListener("DOMContentLoaded", function () {
   // 페이지가 로드되면 실행
   const flashMessages = document.querySelectorAll(".flash-message");

@@ -7,6 +7,8 @@
 
     {% block title %}{% endblock %}
 
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
     <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet"/>
     <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet"/>
@@ -14,7 +16,6 @@
   </head>
 
   <body>
-
     <!-- flash message -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}

@@ -1,0 +1,301 @@
+.health-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 12px 40px;
+}
+
+.health-header {
+  margin-bottom: 30px;
+}
+
+.health-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.health-header p {
+  margin-bottom: 0;
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.health-dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.health-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 0.15rem 1.25rem 0 rgba(58, 59, 69, 0.08);
+  transition: all 0.2s ease;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 6px solid transparent;
+}
+
+.health-card:hover {
+  transform: translateY(-4px);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 0.5rem 1.5rem rgba(58, 59, 69, 0.15);
+}
+
+.health-card.orange {
+  border-left-color: #f59e0b;
+}
+.health-card.green {
+  border-left-color: #10b981;
+}
+.health-card.blue {
+  border-left-color: #3b82f6;
+}
+.health-card.purple {
+  border-left-color: #8b5cf6;
+}
+
+.health-icon {
+  font-size: 2.7rem;
+  margin-bottom: 18px;
+  line-height: 1;
+}
+
+.health-icon.orange {
+  color: #f59e0b;
+}
+.health-icon.green {
+  color: #10b981;
+}
+.health-icon.blue {
+  color: #3b82f6;
+}
+.health-icon.purple {
+  color: #8b5cf6;
+}
+
+.health-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #1f2937;
+  line-height: 1.4;
+}
+
+.health-desc {
+  color: #6b7280;
+  line-height: 1.7;
+  font-size: 0.98rem;
+  margin-bottom: 0;
+}
+
+.health-desc strong {
+  color: #374151;
+  font-weight: 700;
+}
+
+.health-link {
+  margin-top: 22px;
+  text-align: right;
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 0.98rem;
+}
+
+.latest-table-section {
+  margin-top: 56px;
+}
+
+.section-header {
+  margin-bottom: 14px;
+}
+
+.section-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #1f2937;
+}
+
+.section-header p {
+  margin-bottom: 0;
+  color: #6b7280;
+  font-size: 0.97rem;
+  line-height: 1.6;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: 1.1rem;
+  box-shadow: 0 0.15rem 1.25rem 0 rgba(58, 59, 69, 0.08);
+  overflow: hidden;
+}
+
+.latest-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.latest-table thead {
+  background: #f8f9fc;
+}
+
+.latest-table th {
+  padding: 15px 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #4b5563;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.latest-table td {
+  padding: 16px 12px;
+  font-size: 0.95rem;
+  color: #1f2937;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.latest-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.latest-table th:nth-child(1),
+.latest-table td:nth-child(1) {
+  width: 110px; /* 검진일 */
+}
+
+.latest-table th:nth-child(2),
+.latest-table td:nth-child(2) {
+  width: 90px; /* 이름 */
+}
+
+.latest-table th:nth-child(3),
+.latest-table td:nth-child(3) {
+  width: 70px; /* 성별 */
+}
+
+.latest-table th:nth-child(4),
+.latest-table td:nth-child(4) {
+  width: 70px; /* 나이 */
+}
+
+.latest-table th:nth-child(5),
+.latest-table td:nth-child(5) {
+  width: 80px; /* 키 */
+}
+
+.latest-table th:nth-child(6),
+.latest-table td:nth-child(6) {
+  width: 90px; /* 몸무게 */
+}
+
+.latest-table th:nth-child(7),
+.latest-table td:nth-child(7) {
+  width: 110px; /* 등급 */
+}
+
+.latest-table th:nth-child(8),
+.latest-table td:nth-child(8) {
+  width: 90px; /* 상세보기 */
+  text-align: center;
+}
+
+/* 텍스트 overflow 처리 */
+.latest-table th,
+.latest-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 컬럼 강조 (은은한 틴트) */
+.latest-table td:nth-child(1),
+.latest-table th:nth-child(1) {
+  background: rgba(99, 102, 241, 0.05); /* 검진일 */
+}
+
+.latest-table td:nth-child(2),
+.latest-table th:nth-child(2) {
+  background: rgba(59, 130, 246, 0.05); /* 이름 */
+}
+
+.latest-table td:nth-child(7),
+.latest-table th:nth-child(7) {
+  background: rgba(99, 102, 241, 0.07); /* 등급 */
+}
+
+.table-empty {
+  background: #fff;
+  border-radius: 1.1rem;
+  padding: 48px 20px;
+  text-align: center;
+  color: #6b7280;
+  box-shadow: 0 0.15rem 1.25rem rgba(58, 59, 69, 0.08);
+}
+
+.table-empty i {
+  font-size: 2.5rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.table-empty a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.table-empty a:hover {
+  background: #dbeafe;
+}
+
+@media (max-width: 992px) {
+  .health-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .health-page {
+    padding: 20px 6px 30px;
+  }
+
+  .health-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .health-title {
+    font-size: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .latest-table {
+    min-width: 720px;
+  }
+}

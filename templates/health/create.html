@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>건강검진 등록</title>
+<link href="{{ url_for('static', filename='css/create.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+
+<div class="col-12">
+  <div class="health-list-page">
+    <div class="health-header">
+      <h1>건강검진 등록</h1>
+      <p>신체 정보와 검사 결과를 입력하고 건강검진 기록을 저장하세요.</p>
+    </div>
+    <form action="/health/create" method="POST" class="user">
+      <!-- 기본 정보 -->
+      <div class="ocr-upload-box">
+        <div class="ocr-upload-title">검진표 사진 업로드</div>
+        <div class="ocr-upload-desc">
+          검진 결과표 이미지 파일을 선택한 뒤 확인 버튼을 눌러주세요.
+        </div>
+        <div class="ocr-upload-note">
+          자동 입력된 값은 인식 오류가 있을 수 있으므로, 저장 전 항목을 다시 확인하고 필요한 경우 수정해주세요.
+        </div>
+
+        <div class="file-ocr-wrap">
+
+        <!-- 숨겨진 실제 input -->
+        <input type="file" id="ocrFile" accept="image/*,.jpg,.jpeg,.png" style="display:none;">
+
+        <!-- 우리가 만든 버튼 -->
+        <button type="button" id="fileSelectBtn" class="file-btn">
+          파일 선택
+        </button>
+
+        <span id="ocrFileName" class="ocr-file-name">선택된 파일 없음</span>
+
+        <button type="button" id="ocrBtn" class="ocr-btn">확인</button>
+
+      </div>
+
+      <div id="ocrStatus" class="ocr-status"></div>
+      <div id="ocrFileName" class="ocr-file-name">선택된 파일 없음</div>
+      <div id="ocrStatus" class="ocr-status"></div>
+  </div>
+
+
+      <div class="health-section">
+        <div class="health-title">기본 정보</div>
+        <div class="form-group row">
+          <div class="col-12 col-md-6">
+            <label>이름</label>
+            <input type="text" name="name"
+              value="{{ session['user_name'] }}"
+              class="form-control" readonly />
+          </div>
+          <div class="col-12 col-md-6">
+            <label>검사일자</label>
+            <input type="date" name="exam_date" class="form-control" required />
+          </div>
+          <div class="col-12 col-md-6">
+            <label>생년월일</label>
+            <input type="date" name="birth_date" value="{{ session['user_birth_date'] }}" class="form-control" readonly />
+          </div>
+          <div class="col-12 col-md-6">
+            <label>성별</label>
+            <select name="gender" class="form-control" readonly>
+              <option value="">선택</option>
+              <option value="male" {% if session['user_gender'] == 'male' %}selected{% endif %}>남성</option>
+              <option value="female" {% if session['user_gender'] == 'female' %}selected{% endif %}>여성</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 신체 정보 -->
+      <div class="health-section">
+        <div class="health-title">신체 정보</div>
+        <div class="form-group row">
+
+          <div class="col-12 col-md-6">
+            <label>키(cm)</label>
+            <input type="number" step="0.1" min="50" max="250"
+              id="height" name="height" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>체중(kg)</label>
+            <input type="number" step="0.1" min="10" max="300"
+              id="weight" name="weight" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>체질량지수(BMI)(kg/m²)</label>
+            <input type="number" step="0.1" min="0" max="40"
+              id="BMI" name="BMI" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>허리둘레(cm)</label>
+            <input type="number" step="0.1" min="10" max="300"
+            id="waist" name="waist" class="form-control" required />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 시력 / 청력 -->
+      <div class="health-section">
+        <div class="health-title">시력 / 청력</div>
+        <div class="form-group row">
+
+          <div class="col-12 col-md-6">
+            <label>시력(좌)</label>
+            <input type="number" step="0.1"
+              id="vision_left" name="vision_left" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>시력(우)</label>
+            <input type="number" step="0.1"
+              id="vision_right" name="vision_right" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>청력(좌)</label>
+            <select name="hearing_left" id="hearing_left" class="form-control">
+              <option value="0">정상</option>
+              <option value="1">이상</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>청력(우)</label>
+            <select name="hearing_right" id="hearing_right" class="form-control">
+              <option value="0">정상</option>
+              <option value="1">이상</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 혈압 / 혈액 -->
+      <div class="health-section">
+        <div class="health-title">혈압 / 혈액 검사</div>
+        <div class="form-group row">
+
+          <div class="col-12 col-md-6">
+            <label>수축기 혈압(mmHg)</label>
+            <input type="number" step="0.1" min="30" max="300"
+              id="systolic_bp" name="systolic_bp" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>이완기 혈압(mmHg)</label>
+            <input type="number" step="0.1" min="30" max="200"
+              id="diastolic_bp" name="diastolic_bp" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>혈색소(g/dL)</label>
+            <input type="number" step="0.1" min="0" max="100"
+              id="hemoglobin" name="hemoglobin" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>공복혈당(mg/dL)</label>
+            <input type="number" step="0.1" min="10" max="300"
+              id="fasting_glucose" name="fasting_glucose" class="form-control" required />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 간 / 신장 -->
+      <div class="health-section">
+        <div class="health-title">간 / 신장 기능</div>
+        <div class="form-group row">
+
+          <div class="col-12 col-md-6">
+            <label>혈청크레아티닌(mg/dL)</label>
+            <input type="number" step="0.1" min="0" max="10"
+              id="creatinine" name="creatinine" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>신사구체여과율(mL/min/1.73m²)</label>
+            <input type="number" step="0.1" min="10" max="300"
+              id="eGFR" name="eGFR" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>AST(IU/L)</label>
+            <input type="number" step="0.1" min="0" max="2000"
+              id="AST" name="AST" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>ALT(IU/L)</label>
+            <input type="number" step="0.1" min="0" max="2000"
+              id="ALT" name="ALT" class="form-control" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>γ-GTP(IU/L)</label>
+            <input type="number" step="0.1" min="0" max="1000"
+              id="rGTP" name="rGTP" class="form-control" required />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 기타 검사 -->
+      <div class="health-section">
+        <div class="health-title">기타 검사</div>
+        <div class="form-group row">
+
+          <div class="col-12 col-md-6">
+            <label>요단백</label>
+            <select name="urine_protein" id="urine_protein" class="form-control">
+              <option value="0">음성</option>
+              <option value="1">의심</option>
+              <option value="2">양성</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>흉부방사선촬영</label>
+            <select name="xray" id="xray" class="form-control">
+              <option value="0">음성</option>
+              <option value="1">양성</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label>구강검진</label>
+            <select name="dental_exam" id="dental_exam" class="form-control">
+              <option value="0">정상</option>
+              <option value="1">이상</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+    
+      <button type="submit" class="btn btn-primary btn-user btn-block">
+        저장하기
+      </button>
+
+    </form>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/health_ocr.js') }}"></script>
+
+{% endblock %}

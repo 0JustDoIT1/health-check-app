@@ -1,3 +1,123 @@
-{% extends "base.html" %} {% block title %}
-<title>Dashboard</title>
-{% endblock %} {% block contents %} {% endblock %}
+{% extends "base.html" %}
+
+{% block title %}
+<title>{{page_title}}</title>
+<link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block contents %}
+<div class="col-12">
+  <div class="health-page">
+
+    <div class="health-header">
+      <h1>{{page_title}}</h1>
+      <p>필요한 메뉴를 선택해 건강검진 데이터를 관리하세요.</p>
+    </div>
+
+    <div class="health-dashboard">
+      <a href="{{url_for('health.create_health_record')}}" class="health-card orange">
+        <div>
+          <div class="health-icon orange"><i class="fas fa-stethoscope"></i></div>
+          <div class="health-title">건강검진 등록</div>
+          <div class="health-desc">
+            <strong>새로운 건강검진 결과</strong>를 입력하고 저장하여<br>
+            개인 건강 데이터를 <strong>체계적으로 관리</strong>할 수 있습니다.
+          </div>
+        </div>
+        <div class="health-link">이동하기 →</div>
+      </a>
+
+      <a href="{{url_for('health.getHealthList')}}" class="health-card green">
+        <div>
+          <div class="health-icon green"><i class="fas fa-file-medical"></i></div>
+          <div class="health-title">결과 조회</div>
+          <div class="health-desc">
+            등록된 건강검진 결과를 <strong>목록으로 확인</strong>하고<br>
+            원하는 검진 기록의 <strong>상세 내용 조회</strong>가 가능합니다.
+          </div>
+        </div>
+        <div class="health-link">이동하기 →</div>
+      </a>
+
+      <a href="{{url_for('health.healthTrend')}}" class="health-card blue">
+        <div>
+          <div class="health-icon blue"><i class="fas fa-chart-line"></i></div>
+          <div class="health-title">내 건강 추이</div>
+          <div class="health-desc">
+            검진 결과의 변화를 <strong>그래프로 시각화</strong>하여<br>
+            기간별 건강 상태의 흐름을 <strong>쉽게 파악</strong>할 수 있습니다.
+          </div>
+        </div>
+        <div class="health-link">이동하기 →</div>
+      </a>
+
+      <a href="{{url_for('health.ageComparison')}}" class="health-card purple">
+        <div>
+          <div class="health-icon purple"><i class="fas fa-users"></i></div>
+          <div class="health-title">연령대별 비교</div>
+          <div class="health-desc">
+            <strong>연령대별 건강 수치 비교</strong>를 통해 나의 건강 상태를<br>
+            보다 <strong>객관적으로 확인</strong>할 수 있습니다.
+          </div>
+        </div>
+        <div class="health-link">이동하기 →</div>
+      </a>
+    </div>
+
+    <div class="latest-table-section">
+      <div class="section-header">
+        <h2>최근 건강검진 결과</h2>
+        <p>가장 최근에 등록된 검진 결과입니다.</p>
+      </div>
+
+      {% if data %}
+        <div class="table-card">
+          <table class="latest-table">
+            <thead>
+              <tr>
+                <th>검진일</th>
+                <th>이름</th>
+                <th>성별</th>
+                <th>생년월일</th>
+                <th>키</th>
+                <th>몸무게</th>
+                <th>등급</th>
+                <th>상세보기</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ data.exam_date.strftime('%Y.%m.%d') }}</td>
+                <td>{{ data.name }}</td>
+                <td>{{ schema.gender.classes.get(data.gender, '-') }}</td>
+                <td>{{ data.birth_date.strftime('%Y.%m.%d') }}</td>
+                <td>{{ data.height }}{{ schema.height.unit }}</td>
+                <td>{{ data.weight }}{{ schema.weight.unit }}</td>
+                <td>
+                  <span class="grade-badge grade-{{ data.grade|lower }} fw-bold">
+                    {{ data.grade }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{{ url_for('health.healthDetail', id=data.id) }}" class="detail-btn">
+                    보기
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      {% else %}
+        <div class="table-empty">
+          <p>아직 등록된 건강검진 결과가 없습니다.</p>
+          <a href="{{ url_for('health.create_health_record') }}">
+            건강검진 등록하러 가기 →
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

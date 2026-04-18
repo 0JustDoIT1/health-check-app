@@ -14,11 +14,13 @@
 <form class="user" method="POST" action="{{ url_for('auth.signIn') }}">
   <div class="form-group mb-3">
     <input
-      type="email"
+      type="text"
       name="email"
       class="form-control form-control-user"
       placeholder="이메일"
       required
+      data-parsley-trigger="submit"
+      data-parsley-required-message="이메일을 입력해주세요"
     />
   </div>
 
@@ -29,6 +31,8 @@
       class="form-control form-control-user"
       placeholder="비밀번호"
       required
+      data-parsley-trigger="submit"
+      data-parsley-required-message="비밀번호를 입력해주세요"
     />
   </div>
 

@@ -1,41 +1,42 @@
 body {
-    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+  background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
 }
 
 /* 전체 중앙 정렬 */
 .auth-wrapper {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
 /* 카드 */
 .auth-card {
-    width: 100%;
-    max-width: 420px;
-    border: 0;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 420px;
+  border: 0;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* 카드 내부 */
 .auth-body {
-    padding: 40px;
+  padding: 40px;
 }
 
-/* flash (이미 있는 거 유지) */
+/* flash 메시지 스타일 */
 .flash-message {
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    padding: 12px 20px;
-    border-radius: 8px;
-    opacity: 1;
-    transition: opacity 0.5s;
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 12px 20px;
+  border-radius: 8px;
+  opacity: 0; /* 처음엔 숨겨져 있어야 함 */
+  transition: opacity 0.3s ease-in-out; /* 나타나는 시간 더 빠르게 설정 (0.3초) */
+  visibility: hidden; /* 처음엔 보이지 않음 */
 }
 
 /* Parsley error list */
@@ -59,4 +60,47 @@ input.parsley-error {
 input.parsley-success {
   border: 1px solid #1cc88a !important;
   box-shadow: 0 0 0 0.15rem rgba(28, 200, 138, 0.15);
+}
+
+/* form-control-select: select 요소 전용 스타일 */
+.form-control-select {
+  display: block;
+  width: 100%;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #6e707e;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+
+  border-radius: 10rem;
+  padding: 0.75rem 0.5rem;
+}
+
+.form-control:focus {
+  border-color: #4e73df;
+  box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.12);
+}
+
+/* focus 스타일 추가 */
+.form-control-select:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(38, 143, 255, 0.25);
+}
+
+/* 선택된 옵션의 텍스트 색상과 배경색 */
+.form-control-select option {
+  color: #495057;
+  background-color: #fff;
+}
+
+/* 선택 시 option의 배경색 */
+.form-control-select:focus option {
+  background-color: #e9ecef;
 }

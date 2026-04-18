@@ -2,7 +2,7 @@ from argon2 import PasswordHasher
 from db.connection import getConnection
 from constants.auth import SIGNUP_SUCCESS, SIGNUP_DUPLICATE, SIGNUP_ERROR, SIGNUP_EMAIL, SIGNUP_PASSWORD
 import re
-from constants.regex import EMAIL_REGEX, PASSWORD_REGEX
+from constants.regex import NAME_REGEX, EMAIL_REGEX, PASSWORD_REGEX
 
 ph = PasswordHasher()
 
@@ -45,11 +45,20 @@ def checkExistUser(cur, email):
 
 # 회원가입 모듈
 def signUpModule(request):
+    name = request.form.get("name")
     email = request.form.get("email")
+    birth_date = request.form.get("birth_date")
+    gender = request.form.get("gender")
     password = request.form.get("password")
     repassword = request.form.get("re_password")
     
-    if not email or not password:
+    if not name or not email or not password or not birth_date or not gender:
+        return SIGNUP_ERROR  # 필수 입력값이 하나라도 비어 있으면 오류
+    
+    if gender not in ['male', 'female']:
+        return SIGNUP_ERROR
+    
+    if not re.match(NAME_REGEX, name):
         return SIGNUP_ERROR
     
     if not re.match(EMAIL_REGEX, email):
@@ -58,7 +67,7 @@ def signUpModule(request):
     if not re.match(PASSWORD_REGEX, password):
         return SIGNUP_PASSWORD
     
-    if (password != repassword):
+    if password != repassword:
         return SIGNUP_PASSWORD
 
     conn = getConnection()
@@ -66,15 +75,16 @@ def signUpModule(request):
 
     try:
         existUser = checkExistUser(cur, email)
-        if(existUser):
+        if existUser:
             return SIGNUP_DUPLICATE
 
         hashPassword = ph.hash(password)
 
+        # 성별과 생년월일을 함께 INSERT 쿼리에 추가
         cur.execute("""
-            INSERT INTO user (email, password)
-            VALUES (%s, %s)
-        """, (email, hashPassword))
+            INSERT INTO user (name, email, password, gender, birth_date)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (name, email, hashPassword, gender, birth_date))
         
         conn.commit()
 

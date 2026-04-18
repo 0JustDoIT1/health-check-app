@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from dao.auth_dao import signInModule, signUpModule
 from constants.auth import SIGNUP_SUCCESS, SIGNUP_DUPLICATE, SIGNUP_ERROR, SIGNUP_EMAIL, SIGNUP_PASSWORD
 from dao.auth_decorators import checkGuest
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -14,8 +15,13 @@ def signIn():
             flash("아이디 또는 비밀번호가 잘못되었습니다.", "warning")
             return redirect(url_for("auth.signIn"))
         
+        user_birth_date = user["birth_date"].strftime("%Y-%m-%d")
+
         session["user_id"] = user["id"]
-        session["email"] = user["email"]
+        session["user_email"] = user["email"]
+        session["user_name"] = user["name"]
+        session["user_birth_date"] = user_birth_date
+        session["user_gender"] = user["gender"]
         session.permanent = True
         
         return redirect(url_for('home'))

@@ -1,81 +1,136 @@
-{% extends "base.html" %} {% block contents %}
-<div class="container-fluid">
-  <h1 class="h3 mb-4 text-gray-800">내 건강 지표 추이</h1>
-  <div class="mb-3">
-    <button class="btn btn-primary btn-sm mr-2" onclick="updateChart('weight')">
-      몸무게
-    </button>
-    <button class="btn btn-info btn-sm mr-2" onclick="updateChart('bmi')">
-      BMI
-    </button>
-    <button class="btn btn-success btn-sm" onclick="updateChart('glucose')">
-      공복혈당
-    </button>
-  </div>
+{% extends "base.html" %}
+{% block title %}
+<title>{{page_title}}</title>
+<link href="{{ url_for('static', filename='css/trend.css') }}" rel="stylesheet">
+{% endblock %}
+{% block contents %}
+<div class="col-12">
+    <div class="trend-page">
+        <!-- HEADER -->
+        <div class="trend-header">
+            <h1>건강 지표 추이</h1>
+            <p>선택한 항목의 수치 변화를 확인할 수 있습니다.</p>
+        </div>
+        
+        {% if length > 0 %}
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap" style="gap: 5px;">
+                        <button id="heightBtn" class="btn btn-outline-primary btn-sm" onclick="changeChart('height', '키', null, 'heightBtn')">1. 키</button>
+                        <button id="weightBtn" class="btn btn-outline-primary btn-sm" onclick="changeChart('weight', '몸무게', null, 'weightBtn')">2. 몸무게</button>
+                        <button id="BMIBtn" class="btn btn-outline-primary btn-sm" onclick="changeChart('BMI', 'BMI', 23, 'BMIBtn')">3. BMI</button>
+                        <button id="waistBtn" class="btn btn-outline-primary btn-sm" onclick="changeChart('waist', '허리둘레', 90, 'waistBtn')">4. 허리둘레</button>
+                        <button id="systolicBpBtn" class="btn btn-outline-danger btn-sm" onclick="changeChart('systolic_bp', '수축기', 120, 'systolicBpBtn')">5. 수축기</button>
+                        <button id="diastolicBpBtn" class="btn btn-outline-danger btn-sm" onclick="changeChart('diastolic_bp', '이완기', 80, 'diastolicBpBtn')">6. 이완기</button>
+                        <button id="hemoglobinBtn" class="btn btn-outline-warning btn-sm" onclick="changeChart('hemoglobin', '혈색소', 13, 'hemoglobinBtn')">7. 혈색소</button>
+                        <button id="fastingGlucoseBtn" class="btn btn-outline-warning btn-sm" onclick="changeChart('fasting_glucose', '공복혈당', 100, 'fastingGlucoseBtn')">8. 공복혈당</button>
+                        <button id="creatinineBtn" class="btn btn-outline-secondary btn-sm" onclick="changeChart('creatinine', '크레아티닌', 1.2, 'creatinineBtn')">9. 크레아티닌</button>
+                        <button id="eGFRBtn" class="btn btn-outline-secondary btn-sm" onclick="changeChart('eGFR', 'eGFR', 60, 'eGFRBtn')">10. GFR</button>
+                        <button id="ASTBtn" class="btn btn-outline-success btn-sm" onclick="changeChart('AST', 'AST', 40, 'ASTBtn')">11. AST</button>
+                        <button id="ALTBtn" class="btn btn-outline-success btn-sm" onclick="changeChart('ALT', 'ALT', 40, 'ALTBtn')">12. ALT</button>
+                        <button id="rGTPBtn" class="btn btn-outline-success btn-sm" onclick="changeChart('rGTP', '감마지티피', 50, 'rGTPBtn')">13. rGTP</button>
+                    </div>
+                </div>
+            </div>
 
-  <div class="chart-area" style="position: relative; height: 40vh; width: 100%">
-    <canvas id="canvasTrend"></canvas>
-  </div>
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary">체중 변화 (kg)</h6>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary" id="chartLabel">종합 건강 수치 분석</h6>
+                    <span class="badge badge-danger" id="stdLabel" style="display:none;"></span>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px;"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+        {% else %}
+            <div class="table-empty">
+                <p>아직 등록된 건강검진 결과가 없습니다.</p>
+                <a href="{{ url_for('health.create_health_record') }}">
+                    건강검진 등록하러 가기 →
+                </a>
+            </div>
+        {% endif %}
     </div>
-    <div class="card-body">
-      <div
-        class="chart-area"
-        style="position: relative; height: 40vh; width: 100%"
-      >
-        <canvas id="canvasTrend"></canvas>
-      </div>
-    </div>
-  </div>
 </div>
-{% endblock contents %} {% block extra_scripts %}
+
+
 <script>
-  const trendData = {{ trend_data | tojson }};
-  let myChart; // 차트 객체를 전역 변수로 선언
+    // 1. 데이터 로드
+    const rawData = {{ trend_data | tojson }}; // DB 데이터 불러오기
+    console.log("DB 데이터 수신 성공:", rawData.length, "건");
 
-  function updateChart(type) {
-      const labels = trendData.map(item => item.date);
-      let data, labelText, color;
+    let myChart = null;
 
-      // 선택한 타입에 따라 데이터와 색상 설정
-      if (type === 'weight') {
-          data = trendData.map(item => item.weight);
-          labelText = '몸무게 (kg)';
-          color = 'rgba(78, 115, 223, 1)';
-      } else if (type === 'bmi') {
-          data = trendData.map(item => item.bmi);
-          labelText = 'BMI 지수';
-          color = 'rgba(54, 185, 204, 1)';
-      } else if (type === 'glucose') {
-          data = trendData.map(item => item.glucose);
-          labelText = '공복혈당 (mg/dL)';
-          color = 'rgba(28, 200, 138, 1)';
-      }
+    // 2. 그래프 그리기 함수 (changeChart로 이름 고정)
+    function changeChart(col, label, std, buttonId) {
+        if (!rawData || rawData.length === 0) {
+            alert("표시할 데이터가 없습니다.");
+            return;
+        }
 
-      const ctx = document.getElementById('canvasTrend').getContext('2d');
+        // 2.1 버튼 색상 변경
+        const allButtons = document.querySelectorAll('.btn'); // 모든 버튼 선택
+        allButtons.forEach(button => {
+            button.classList.remove('active'); // 기존에 활성화된 버튼에서 active 클래스 제거
+        });
 
-      // 기존 차트가 있으면 파괴하고 새로 그려야 겹치지 않음
-      if (myChart) myChart.destroy();
+        const selectedButton = document.getElementById(buttonId);
+        selectedButton.classList.add('active'); // 클릭된 버튼에 active 클래스 추가
 
-      myChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-              labels: labels,
-              datasets: [{
-                  label: labelText,
-                  data: data,
-                  borderColor: color,
-                  fill: false,
-                  lineTension: 0.3
-              }]
-          },
-          options: { maintainAspectRatio: false }
-      });
-  }
+        document.getElementById('chartLabel').innerText = label + " 변화 추이";
+        const stdLabel = document.getElementById('stdLabel');
+        
+        if (std !== null) {
+            stdLabel.innerText = "정상 기준: " + std;
+            stdLabel.style.display = "inline";
+        } else {
+            stdLabel.style.display = "none";
+        }
 
-  // 처음 페이지 로드 시 몸무게 기본 표시
-  updateChart('weight');
+        const ctx = document.getElementById('trendChart');
+        if (myChart) myChart.destroy();
+
+        // 날짜 데이터
+        const labels = rawData.map(d => d.formatted_date || "검진일");
+
+        // 차트 그리기
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '나의 수치',
+                        data: rawData.map(d => d[col]),
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    },
+                    ...(std !== null ? [{
+                        label: '정상 기준선',
+                        data: rawData.map(() => std),
+                        borderColor: '#e74a3b',
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        borderWidth: 2
+                    }] : [])
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    }
+
+    // 페이지 로드 시 기본 차트 설정 (BMI 기본값으로 설정)
+    window.onload = function() {
+        if (rawData && rawData.length > 0) {
+            changeChart('BMI', 'BMI', 23, 'BMIBtn');
+        }
+    };
 </script>
 {% endblock %}

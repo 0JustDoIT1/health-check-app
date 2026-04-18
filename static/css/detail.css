@@ -1,0 +1,403 @@
+/* 페이지 기본 설정 */
+.health-detail-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 12px 40px;
+}
+
+/* 헤더 스타일 */
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.detail-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #1f2937;
+}
+
+.detail-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* 등급 배지 */
+.detail-badge {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.detail-badge.detail-a {
+  color: #166534;
+}
+
+.detail-badge.detail-b {
+  color: #1d4ed8;
+}
+
+.detail-badge.detail-c {
+  color: #b45309;
+}
+
+.detail-badge.detail-d {
+  color: #dc2626;
+}
+
+.detail-badge.detail-e {
+  color: #991b1b;
+}
+/* 문구 */
+.recommendation-text {
+  font-size: 1rem;
+  color: #00796b;
+  font-style: italic;
+}
+
+/* 더보기 버튼 */
+.summary-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* 버튼 기본 스타일 */
+.action-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.action-btn-save {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.action-btn-save:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.action-btn-edit {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.action-btn-edit:hover {
+  background: #c7d2fe;
+  color: #3730a3;
+}
+
+.action-btn-delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.action-btn-delete:hover {
+  background: #fecaca;
+  color: #b91c1c;
+  text-decoration: none;
+}
+
+/* 정보 카드 */
+.info-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 24px 26px;
+  box-shadow: 0 0.15rem 1.25rem 0 rgba(58, 59, 69, 0.08);
+  margin-bottom: 24px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+.info-card:hover {
+  transform: translateY(-5px); /* 카드가 살짝 떠오르는 느낌 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* 더 강한 그림자 */
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+/* 2열 레이아웃으로 정보 배치 */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 기본 2열 */
+  gap: 16px;
+}
+
+.info-item {
+  background: #f8f9fc;
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: background-color 0.3s ease;
+}
+
+.info-item:hover {
+  background-color: #eff6ff; /* 마우스 오버 시 밝은 파랑 배경 */
+  transform: translateY(-3px); /* 부드럽게 올라가는 느낌 */
+}
+
+.info-label {
+  display: block;
+  font-size: 0.88rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.info-value {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+/* 이름과 생년월일을 한 줄에 50%씩 배치 */
+.half-width {
+  grid-column: span 1; /* 기본적으로 한 열씩 차지 */
+}
+
+/* 성별, 키, 몸무게는 세 개의 열로 배치 */
+.info-grid-second {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 세 개의 열로 배치 */
+  gap: 16px;
+}
+
+/* 카테고리 영역 기본 숨김 */
+.category-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.5s ease,
+    margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.category-wrap.open {
+  max-height: 2000px; /* 충분히 크게 */
+  margin-top: 20px;
+}
+
+/* 카테고리 박스 디자인 */
+.category-box {
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 4px;
+  border: 1px solid #eee;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.category-desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* 상태별 배경색 */
+.status-normal {
+  background: #f6fff7;
+}
+
+.status-mild {
+  background: #fffdf3;
+}
+
+.status-moderate {
+  background: #fff7f0;
+}
+
+.status-severe {
+  background: #fff1f2;
+}
+
+.status-a {
+  background: #dcfce7;
+}
+
+.status-b {
+  background: #dbeafe;
+}
+
+.status-c {
+  background: #fef3c7;
+}
+
+.status-d {
+  background: #fee2e2;
+}
+
+.status-e {
+  background: #fecaca;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: #2563eb; /* hover 색상 (원하면 변경) */
+}
+
+.icon-btn:focus {
+  outline: none;
+}
+
+/* 화살표 회전 */
+.icon-btn i {
+  transition: transform 0.7s ease;
+}
+
+.icon-btn.open i {
+  transform: rotate(180deg); /* 클릭시 180도 회전 */
+}
+
+@media (max-width: 768px) {
+  /* 모바일에서는 1열로 표시 */
+  .info-grid {
+    grid-template-columns: 1fr; /* 모바일에서는 1열로 표시 */
+  }
+
+  /* 모바일에서는 성별, 키, 몸무게도 1열로 표시 */
+  .info-grid-second {
+    grid-template-columns: 1fr; /* 모바일에서는 1열로 표시 */
+  }
+
+  /* 작은 화면에서 카드 간격 및 패딩 조정 */
+  .health-detail-page {
+    padding: 20px 6px 30px;
+  }
+
+  .detail-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .detail-table {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 992px) {
+  .info-grid {
+    grid-template-columns: 1fr 1fr; /* 2열로 표시 */
+  }
+
+  .info-grid-second {
+    grid-template-columns: 1fr 1fr 1fr; /* 3열로 표시 */
+  }
+}
+
+/* 테이블 스타일 */
+.table-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 0.15rem 1.25rem 0 rgba(58, 59, 69, 0.08);
+  overflow: hidden;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.detail-table thead {
+  background: #f8f9fc;
+}
+
+.detail-table th {
+  padding: 14px 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #334155;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 15px 12px;
+  font-size: 0.95rem;
+  color: #111827;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.detail-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.key-text {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.value-text {
+  color: #1f2937;
+}
+
+.score-badge {
+  display: inline-block;
+  min-width: 42px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.sub-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exporting #captureArea {
+  background: transparent !important;
+}

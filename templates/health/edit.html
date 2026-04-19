@@ -9,6 +9,11 @@
 
 <div class="col-12">
   <div class="health-list-page">
+    <div class="sub-actions mb-4">
+      <a href="{{ url_for('health.healthDetail', id=data.id) }}" class="action-btn action-btn-save">
+        <i class="fas fa-arrow-left mr-1"></i>목록으로
+      </a>
+    </div>
     <div class="health-header">
       <h1>건강검진 수정</h1>
       <p><span class="font-weight-bold">{{ data.exam_date.strftime('%Y.%m.%d') }}</span> 일자의 건강검진 정보를 수정합니다.</p>
@@ -39,12 +44,12 @@
             <label>생년월일</label>
             <input type="date" name="birth_date"
               value="{{ data.birth_date }}"
-              class="form-control" required />
+              class="form-control" readonly />
           </div>
 
           <div class="col-12 col-md-6">
             <label>성별</label>
-            <select name="gender" class="form-control" required>
+            <select name="gender" class="form-control" readonly>
               <option value="">선택</option>
               <option value="male" {{ 'selected' if data.gender == 'male' else '' }}>남성</option>
               <option value="female" {{ 'selected' if data.gender == 'female' else '' }}>여성</option>

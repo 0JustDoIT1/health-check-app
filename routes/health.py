@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash, make_response
 from db.connection import getConnection
-import pymysql
 from constants.health import HEALTH_SCHEMA, GRADE_TEXT, CATEGORY_TEXT, CATEGORY_REPORT
 from dao.health_dao import calculate_age, calculate_exam_age, getNormalMinMax, get_category_summary, getUser, calculate_health_score
 from dao.auth_decorators import checkSignIn
 import pdfkit
 from datetime import datetime
 from urllib.parse import quote
+import json
 
 health_bp = Blueprint('health', __name__)
 
@@ -16,75 +16,53 @@ health_bp = Blueprint('health', __name__)
 @health_bp.route("/trend")
 @checkSignIn
 def healthTrend():
-    conn = getConnection()
     user_id = session.get("user_id")
-
+    conn = getConnection()
     try:
         with conn.cursor() as cursor:
-            
-            sql = "SELECT * FROM health_result WHERE user_id = %s ORDER BY exam_date ASC"
-            cursor.execute(sql, (user_id,))  # (user_id,) 형태로 튜플로 전달
+            # 내 데이터만 날짜순(과거 -> 미래)으로 가져옵니다.
+            sql = """
+                SELECT * FROM health_result 
+                WHERE user_id = %s 
+                ORDER BY exam_date ASC
+            """
+            cursor.execute(sql, (user_id,))
             trend_data = cursor.fetchall()
             
+            # 날짜가 없을 경우를 대비한 포맷팅 작업
             for row in trend_data:
-                if row['exam_date']:
-                   
+                if row.get('exam_date'):
                     row['formatted_date'] = row['exam_date'].strftime('%Y-%m-%d')
                 else:
-                    row['formatted_date'] = "0000-00-00"
+                    row['formatted_date'] = "날짜 미입력"
                     
-            print(f"가져온 데이터 개수: {len(trend_data)}")
     finally:
         conn.close()
-    return render_template("health/trend.html", page_title="종합 건강 지표 추이" ,trend_data=trend_data, length=len(trend_data))
 
-@health_bp.route("/report")
-@checkSignIn
-def healthReport():
-    conn = getConnection()
-    try:
-        with conn.cursor() as cursor:
-            # 모든 과거 기록을 최신순으로 가져옴
-            sql = "SELECT * FROM health_result ORDER BY exam_date DESC"
-            cursor.execute(sql)
-            all_records = cursor.fetchall()
-            
-            # 날짜 형식 변환
-            for row in all_records:
-                row['formatted_date'] = row['exam_date'].strftime('%Y-%m-%d')
-    finally:
-        conn.close()
+    print("#$##", trend_data)
     
-    return render_template("health/report.html", records=all_records)
-
+    return render_template("health/trend.html", 
+                           page_title="종합 건강 지표 추이", 
+                           trend_data=trend_data)
 
 @health_bp.route("/age")
 @checkSignIn
 def ageComparison():
+    user_id = session.get("user_id")
     conn = getConnection()
     try:
         with conn.cursor() as cursor:
-            # 1. 모든 과거 기록 가져오기 (사이드바 날짜 선택용)
-            sql_records = "SELECT * FROM health_result ORDER BY exam_date DESC"
-            cursor.execute(sql_records)
+            sql_my = "SELECT * FROM health_result WHERE user_id = %s ORDER BY exam_date DESC"
+            cursor.execute(sql_my, (user_id,))
             all_records = cursor.fetchall()
             
-            # 날짜 포맷팅
-            for r in all_records:
-                if r['exam_date']:
-                    r['formatted_date'] = r['exam_date'].strftime('%Y-%m-%d')
-                else:
-                    r['formatted_date'] = "미상"
-            
-            # 2. 가장 최근 데이터 추출 (기준 나이 구하기)
             if not all_records:
-                return "데이터가 없습니다."
-                
+                return redirect(url_for('health.create_health_record'))
+            
             latest_data = all_records[0]
-            my_age = latest_data.get('age', 40) # 나이가 없으면 기본값 40
+            my_age = latest_data.get('age', 20)
             age_min = (my_age // 10) * 10
             
-            # 3. 해당 연령대의 평균 수치 구하기 (메인 비교용)
             sql_avg = """
                 SELECT 
                     AVG(BMI) as avg_BMI,
@@ -100,13 +78,29 @@ def ageComparison():
             cursor.execute(sql_avg, (age_min, age_min + 10))
             group_avg = cursor.fetchone()
 
+            for r in all_records:
+                if r.get('exam_date'):
+                    r['formatted_date'] = r['exam_date'].strftime('%Y-%m-%d')
+                else:
+                    r['formatted_date'] = "미상"
+            
+            # ★ [궁극의 마법 코드] JS가 뱉어내는 모든 에러(날짜, 소수점)를 무시하고 무조건 텍스트로 강제 변환!
+            safe_records = json.dumps(all_records, default=str)
+            safe_avg = json.dumps(group_avg, default=str) if group_avg else "{}"
+
     finally:
         conn.close()
         
     return render_template("health/age_comp.html", 
-                           records=all_records, 
+                           page_title="연령대별 지표 비교",
+                           records=all_records,      # HTML 표 그리기용
                            group_avg=group_avg, 
-                           age_group=age_min)
+                           age_group=age_min,
+                           safe_records=safe_records, # JS 그래프 렌더링용 (에러 방지)
+                           safe_avg=safe_avg,         # JS 그래프 렌더링용 (에러 방지)
+                           schema=HEALTH_SCHEMA)
+
+
 #----------------------------------------------------------------------- #
 #--------------------------------정다희-------------------------- #
 # ---------------------------------------------------------------------- #
@@ -482,42 +476,3 @@ def getHealthList():
         name=name,  # name 파라미터를 템플릿으로 전달
         schema=HEALTH_SCHEMA, 
     )
-
-# PDF 다운 - 작동에러있음 수정 필요
-@health_bp.route("/download/pdf/<int:id>")
-@checkSignIn
-def download_pdf(id):
-
-    # 1. HTML 생성 (해당 검사 id 기준)
-    html = healthDetail(id)
-
-    config = pdfkit.configuration(
-        wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-    )
-
-    options = {
-        'enable-local-file-access': None
-    }
-
-    # 2. PDF 생성
-    pdf = pdfkit.from_string(html, False, configuration=config, options=options)
-
-    response = make_response(pdf)
-    response.headers["Content-Type"] = "application/pdf"
-
-    # 3. 사용자 정보 가져오기
-    user_id = session.get("user_id")
-    user = getUser(user_id)
-
-    # 4. 파일명 생성 (20260302_허병철_건강검진결과.pdf)
-    date_str = datetime.now().strftime("%Y%m%d")
-    filename = f"{date_str}_{user['name']}_건강검진결과.pdf"
-
-    # 5. 한글 안전 처리
-    encoded_filename = quote(filename)
-
-    response.headers["Content-Disposition"] = (
-        f"attachment; filename={encoded_filename}"
-    )
-
-    return response

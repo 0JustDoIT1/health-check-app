@@ -1,81 +1,173 @@
 {% extends "base.html" %}
 {% block title %}
 <title>{{page_title}}</title>
+<link href="{{ url_for('static', filename='css/trend.css') }}" rel="stylesheet">
 {% endblock %}
 {% block contents %}
 <style>
-    /* 상단 선택창 디자인 */
-    .selector-card { background: #fff; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
-    .custom-select-lg { height: 50px; font-size: 1.1rem; border-radius: 10px; border: 2px solid #e3e6f0; transition: 0.3s; cursor: pointer; }
-    .custom-select-lg:focus { border-color: #4e73df; box-shadow: none; }
+    /* 1. 전체 1200px 중앙 정렬 래퍼 */
+    .report-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
 
-    /* 가로 막대 리포트 디자인 */
-    .metric-row { display: flex; align-items: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px dashed #edf0f5; }
-    .metric-name { width: 140px; font-weight: 700; color: #4a4e69; font-size: 0.95rem; }
+    /* 2. 상단 선택창 고급화 */
+    .selector-card { 
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%); 
+        border-radius: 1rem; 
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.05); 
+        margin-bottom: 30px; 
+        border: 1px solid #eaecf4;
+    }
+    .custom-select-lg { 
+        height: 55px; 
+        font-size: 1.1rem; 
+        border-radius: 12px; 
+        border: 2px solid #e3e6f0; 
+        transition: all 0.3s ease; 
+        cursor: pointer; 
+        color: #495057;
+        font-weight: 500;
+    }
+    .custom-select-lg:focus { 
+        border-color: #4e73df; 
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15); 
+    }
+
+    /* 3. 본문 카드 디자인 */
+    .report-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 2rem rgba(0,0,0,0.06);
+        background: #fff;
+    }
+    .report-card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #f1f3f9;
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1.5rem 2rem;
+    }
+
+    /* 4. 가로 막대 리포트 폰트 및 간격 조정 */
+    .metric-row { 
+        display: flex; 
+        align-items: center; 
+        margin-bottom: 22px; 
+        padding-bottom: 15px; 
+        border-bottom: 1px solid #f8f9fc; 
+    }
+    .metric-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     
-    /* 막대 컨테이너 (정상 범위 포함) */
-    .metric-bar-container { 
-        flex-grow: 1; height: 26px; background: #f1f3f9; border-radius: 13px; 
-        position: relative; margin: 0 20px; overflow: visible; 
+    .metric-name { 
+        width: 150px; 
+        font-weight: 700; 
+        color: #5a5c69; 
+        font-size: 1rem; 
+        letter-spacing: -0.5px;
     }
     
-    /* 정상 범위 (Safe Zone) - 연한 초록색 배경 */
+    /* 5. 막대 컨테이너 (바탕을 살짝 더 진하게 해서 대비를 줌) */
+    .metric-bar-container { 
+        flex-grow: 1; 
+        height: 18px; /* 두께 살짝 키움 */
+        background: #e3e6f0; /* 배경을 좀 더 짙은 회색으로 변경해 대비 확보 */
+        border-radius: 9px; 
+        position: relative; 
+        margin: 0 25px; 
+        overflow: visible; 
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 6. 정상 범위 (눈에 확 띄게 투명도와 경계선 강화) */
     .safe-zone { 
-        position: absolute; height: 100%; background: rgba(28, 200, 138, 0.15); 
-        border-left: 1px solid rgba(28, 200, 138, 0.3); border-right: 1px solid rgba(28, 200, 138, 0.3);
+        position: absolute; 
+        height: 100%; 
+        background: rgba(28, 200, 138, 0.35); /* 색상을 더 진하게! */
+        border-left: 2px solid #1cc88a; /* 뚜렷한 경계선 */
+        border-right: 2px solid #1cc88a;
+        border-radius: 4px;
         z-index: 1; 
     }
 
-    /* 내 데이터 막대 */
+    /* 7. 내 데이터 막대 */
     .user-bar { 
-        position: absolute; height: 100%; border-radius: 13px; z-index: 3;
+        position: absolute; 
+        height: 100%; 
+        border-radius: 9px; 
+        z-index: 3;
         transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
-    /* 연령대 평균 마커 (검은색 핀) */
+    /* 8. 연령대 평균 마커 (예쁜 핀 모양) */
     .avg-marker { 
-        position: absolute; top: -5px; width: 4px; height: 36px; 
-        background: #2c3e50; z-index: 4; border-radius: 2px;
+        position: absolute; 
+        top: -4px; 
+        width: 2px; 
+        height: 26px; 
+        background: #2c3e50; 
+        z-index: 4; 
+    }
+    .avg-marker::before {
+        content: ''; position: absolute; top: -4px; left: -4px; 
+        width: 10px; height: 10px; background: #2c3e50; 
+        border-radius: 50%; box-shadow: 0 0 0 2px #fff;
     }
     .avg-marker::after {
-        content: '평균'; position: absolute; top: -18px; left: -10px;
-        font-size: 10px; color: #2c3e50; white-space: nowrap; font-weight: bold;
+        content: '평균'; position: absolute; top: -25px; left: -16px;
+        font-size: 11px; color: #fff; background: #2c3e50; 
+        padding: 2px 7px; border-radius: 4px; white-space: nowrap; 
+        font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
+    /* 9. 텍스트 수치 */
     .metric-value { width: 110px; text-align: right; font-size: 0.95rem; }
-    .metric-value strong { color: #333; font-size: 1.1rem; }
+    .metric-value strong { color: #2c3e50; font-size: 1.25rem; font-weight: 800; }
 
     /* 범례 */
-    .legend-box { display: flex; gap: 15px; font-size: 0.85rem; justify-content: flex-end; margin-bottom: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-box { display: flex; gap: 15px; font-size: 0.85rem; justify-content: flex-end; font-weight: 600; color: #858796;}
+    .legend-item { display: flex; align-items: center; gap: 6px; }
 </style>
-
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="selector-card p-4">
-                <label class="font-weight-bold text-primary mb-2"><i class="fas fa-search-plus mr-1"></i> 분석할 검진 기록을 선택하세요</label>
-                <select class="form-control custom-select-lg" id="recordSelector" onchange="renderHorizontalReport(this.value)">
-                    {% for r in records %}
-                    <option value="{{ loop.index0 }}">{{ r.formatted_date }} 검진 결과 리포트</option>
-                    {% endfor %}
-                </select>
+<div class="col-12">
+    <div class="trend-page">
+        <div class="trend-header">
+            <h1>연령대 비교 리포트</h1>
+            <p>내 건강 수치를 연령대와 비교하여 확인합니다.</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="selector-card p-4">
+                    <label class="font-weight-bold text-primary mb-3" style="font-size: 1.1rem;">
+                        <i class="fas fa-search-plus mr-1"></i> 분석할 검진 기록을 선택하세요
+                    </label>
+                    <select class="form-control custom-select-lg" id="recordSelector" onchange="renderHorizontalReport(this.value)">
+                        {% for r in records %}
+                        <option value="{{ loop.index0 }}">{{ r.formatted_date }} 건강검진 상세 리포트</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary" id="reportTitle">상세 건강 분석</h6>
-                    <div class="legend-box">
-                        <div class="legend-item"><span style="width:12px; height:12px; background:rgba(28, 200, 138, 0.2); border:1px solid rgba(28,200,138,0.5); display:inline-block;"></span> 정상범위</div>
-                        <div class="legend-item"><span style="width:3px; height:12px; background:#2c3e50; display:inline-block;"></span> 연령대 평균</div>
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="card report-card mb-5">
+                    <div class="report-card-header d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-weight-bold text-primary" id="reportTitle">상세 건강 분석</h5>
+                        <div class="legend-box">
+                            <div class="legend-item">
+                                <span style="width:14px; height:14px; background:rgba(28, 200, 138, 0.35); border:2px solid #1cc88a; display:inline-block; border-radius:3px;"></span> 
+                                정상범위
+                            </div>
+                            <div class="legend-item">
+                                <span style="width:10px; height:10px; background:#2c3e50; border-radius:50%; display:inline-block;"></span> 
+                                연령대 평균
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="card-body px-5" id="reportContent">
+                    <div class="card-body p-5" id="reportContent">
+                        </div>
                 </div>
             </div>
         </div>
@@ -83,27 +175,23 @@
 </div>
 
 <script>
-    // 📌 백엔드에서 에러 없이 완벽하게 변환해 준 데이터를 사용합니다.
     const userRecords = {{ safe_records | safe }};
     const avgData = {{ safe_avg | safe }} || {};
 
-    console.log("내가 가진 기록들:", userRecords);
-    console.log("동일 연령대 평균 수치:", avgData);
-
-    // 📌 전체 15개 막대 그래프 항목 (정상범위가 없는 항목은 min, max 생략)
+    // 💡 피드백 반영: 시력(0.81.2), 신사구체(90150) 등 의학적 정상 범위 완벽 세팅
     const metrics = [
         { label: "키", col: "height", avg: null, unit: "cm", limit: 200 },
         { label: "몸무게", col: "weight", avg: null, unit: "kg", limit: 150 },
         { label: "BMI", col: "BMI", avg: avgData.avg_BMI, min: 18.5, max: 24.9, unit: "kg/㎡", limit: 40 },
         { label: "허리둘레", col: "waist", avg: 90, min: 0, max: 90, unit: "cm", limit: 120 },
-        { label: "시력(좌)", col: "vision_left", avg: 1.0, min: 0.8, max: 2.0, unit: "", limit: 2.0 },
-        { label: "시력(우)", col: "vision_right", avg: 1.0, min: 0.8, max: 2.0, unit: "", limit: 2.0 },
+        { label: "시력(좌)", col: "vision_left", avg: 1.0, min: 0.8, max: 1.2, unit: "", limit: 2.0 },
+        { label: "시력(우)", col: "vision_right", avg: 1.0, min: 0.8, max: 1.2, unit: "", limit: 2.0 },
         { label: "수축기 혈압", col: "systolic_bp", avg: avgData.avg_SBP, min: 90, max: 120, unit: "mmHg", limit: 200 },
         { label: "이완기 혈압", col: "diastolic_bp", avg: avgData.avg_DBP, min: 60, max: 80, unit: "mmHg", limit: 130 },
         { label: "공복혈당", col: "fasting_glucose", avg: avgData.avg_Glucose, min: 70, max: 100, unit: "mg/dL", limit: 250 },
         { label: "혈색소", col: "hemoglobin", avg: 14, min: 12, max: 16, unit: "g/dL", limit: 20 },
         { label: "크레아티닌", col: "creatinine", avg: 1.1, min: 0.5, max: 1.2, unit: "mg/dL", limit: 2.5 },
-        { label: "신사구체(eGFR)", col: "eGFR", avg: 60, min: 60, max: 150, unit: "mL/min", limit: 150 },
+        { label: "신사구체(eGFR)", col: "eGFR", avg: 60, min: 90, max: 150, unit: "mL/min", limit: 150 },
         { label: "AST(간기능)", col: "AST", avg: avgData.avg_AST, min: 0, max: 40, unit: "U/L", limit: 150 },
         { label: "ALT(간기능)", col: "ALT", avg: avgData.avg_ALT, min: 0, max: 40, unit: "U/L", limit: 150 },
         { label: "r-GTP", col: "rGTP", avg: avgData.avg_rGTP, min: 0, max: 60, unit: "U/L", limit: 200 }
@@ -113,8 +201,7 @@
         if (!userRecords || userRecords.length === 0) return;
         const selected = userRecords[index];
         
-        // 백틱(`) 기호를 추가하여 자바스크립트 변수가 HTML에 정상적으로 들어가게 수정했습니다.
-        document.getElementById('reportTitle').innerHTML = <i class="fas fa-file-medical-alt mr-2"></i> ${selected.formatted_date} 건강 분석 리포트 (총 18개 항목);
+        document.getElementById('reportTitle').innerHTML = '<i class="fas fa-file-medical-alt mr-2 text-primary"></i> ' + selected.formatted_date + ' 건강 분석 리포트 <span class="badge badge-light text-gray-600 ml-2">총 18개 항목</span>';
         
         const container = document.getElementById('reportContent');
         container.innerHTML = ""; 
@@ -129,59 +216,56 @@
             let safeZoneHtml = '';
             let isWarning = false;
 
-            // 정상 범위(초록색 영역) 렌더링 및 위험 감지
             if (m.min !== undefined && m.max !== undefined) {
                 const minPct = (m.min / m.limit) * 100;
                 const maxPct = (m.max / m.limit) * 100;
-                safeZoneHtml = <div class="safe-zone" style="left: ${minPct}%; width: ${maxPct - minPct}%;"></div>;
-                
+                safeZoneHtml = '<div class="safe-zone" style="left: ' + minPct + '%; width: ' + (maxPct - minPct) + '%;"></div>';
                 if (val < m.min || val > m.max) isWarning = true;
             }
 
-            // 막대 색상 결정 (위험 시 빨간색 경고)
             let color = "linear-gradient(90deg, #4e73df, #224abe)"; 
             if (isWarning) color = "linear-gradient(90deg, #f6c23e, #e74a3b)"; 
 
-            const row = `
-                <div class="metric-row">
-                    <div class="metric-name">${m.label}</div>
-                    <div class="metric-bar-container">
-                        ${safeZoneHtml}
-                        <div class="user-bar" style="width: ${pct}%; background: ${color};"></div>
-                        ${avgVal ? <div class="avg-marker" style="left: ${avgPct}%;"></div> : ''}
-                    </div>
-                    <div class="metric-value"><strong>${val}</strong> <small class="text-gray-500">${m.unit}</small></div>
-                </div>
-            `;
+            const row = '<div class="metric-row">' +
+                '<div class="metric-name">' + m.label + '</div>' +
+                '<div class="metric-bar-container">' +
+                    safeZoneHtml +
+                    '<div class="user-bar" style="width: ' + pct + '%; background: ' + color + ';"></div>' +
+                    (avgVal ? '<div class="avg-marker" style="left: ' + avgPct + '%;"></div>' : '') +
+                '</div>' +
+                '<div class="metric-value"><strong>' + val + '</strong> <small class="text-gray-500">' + m.unit + '</small></div>' +
+            '</div>';
+            
             container.innerHTML += row;
         });
 
-        // 📌 하단 특수 항목 3개 추가 (청력 좌/우, 요단백)
-        container.innerHTML += `
-            <div class="special-box row text-center mt-4 p-4 shadow-sm" style="background:#f8f9fc; border-radius:10px;">
-                <div class="col-4">
-                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">청력(좌)</span>
-                    <h5 class="mb-0 font-weight-bold ${selected.hearing_left == 1 ? 'text-success' : 'text-danger'}">
-                        ${selected.hearing_left == 1 ? '<i class="fas fa-check-circle mr-1"></i>정상' : '<i class="fas fa-exclamation-triangle mr-1"></i>의심'}
-                    </h5>
-                </div>
-                <div class="col-4" style="border-left: 1px solid #e3e6f0; border-right: 1px solid #e3e6f0;">
-                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">청력(우)</span>
-                    <h5 class="mb-0 font-weight-bold ${selected.hearing_right == 1 ? 'text-success' : 'text-danger'}">
-                        ${selected.hearing_right == 1 ? '<i class="fas fa-check-circle mr-1"></i>정상' : '<i class="fas fa-exclamation-triangle mr-1"></i>의심'}
-                    </h5>
-                </div>
-                <div class="col-4">
-                    <span class="d-block text-gray-500 mb-1" style="font-size:0.85rem;">요단백</span>
-                    <h5 class="mb-0 font-weight-bold ${selected.urine_protein == 0 ? 'text-success' : 'text-danger'}">
-                        ${selected.urine_protein == 0 ? '<i class="fas fa-check-circle mr-1"></i>음성' : '<i class="fas fa-exclamation-triangle mr-1"></i>양성'}
-                    </h5>
-                </div>
-            </div>
-        `;
+        let hearingLeftHtml = selected.hearing_left == 1 ? '<i class="fas fa-exclamation-triangle mr-1"></i>의심' : '<i class="fas fa-check-circle mr-1"></i>정상';
+        let hearingLeftClass = selected.hearing_left == 1 ? 'text-danger' : 'text-success';
+
+        let hearingRightHtml = selected.hearing_right == 1 ? '<i class="fas fa-exclamation-triangle mr-1"></i>의심' : '<i class="fas fa-check-circle mr-1"></i>정상';
+        let hearingRightClass = selected.hearing_right == 1 ? 'text-danger' : 'text-success';
+
+        let urineHtml = selected.urine_protein == 0 ? '<i class="fas fa-check-circle mr-1"></i>음성' : '<i class="fas fa-exclamation-triangle mr-1"></i>양성';
+        let urineClass = selected.urine_protein == 0 ? 'text-success' : 'text-danger';
+
+        let specialBox = '<div class="row text-center mt-5 p-4" style="background: linear-gradient(to right, #f8f9fc, #ffffff, #f8f9fc); border-radius: 15px; border: 1px solid #eaecf4;">' +
+            '<div class="col-4">' +
+                '<span class="d-block text-gray-500 mb-2" style="font-size:0.9rem; font-weight:600;">청력(좌)</span>' +
+                '<h4 class="mb-0 font-weight-bold ' + hearingLeftClass + '">' + hearingLeftHtml + '</h4>' +
+            '</div>' +
+            '<div class="col-4" style="border-left: 1px solid #eaecf4; border-right: 1px solid #eaecf4;">' +
+                '<span class="d-block text-gray-500 mb-2" style="font-size:0.9rem; font-weight:600;">청력(우)</span>' +
+                '<h4 class="mb-0 font-weight-bold ' + hearingRightClass + '">' + hearingRightHtml + '</h4>' +
+            '</div>' +
+            '<div class="col-4">' +
+                '<span class="d-block text-gray-500 mb-2" style="font-size:0.9rem; font-weight:600;">요단백</span>' +
+                '<h4 class="mb-0 font-weight-bold ' + urineClass + '">' + urineHtml + '</h4>' +
+            '</div>' +
+        '</div>';
+
+        container.innerHTML += specialBox;
     }
 
-    // 화면 로딩 시 첫 번째 검진 기록 자동 선택 및 출력
     window.onload = () => { if(userRecords && userRecords.length > 0) renderHorizontalReport(0); };
 </script>
 {% endblock %}

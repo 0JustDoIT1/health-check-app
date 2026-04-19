@@ -3,21 +3,68 @@
 <title>{{page_title}}</title>
 <link href="{{ url_for('static', filename='css/trend.css') }}" rel="stylesheet">
 <style>
-    /* 버튼 클릭 시 색상 유지를 위한 스타일 */
-    .btn-trend { transition: all 0.2s; margin-bottom: 5px; font-weight: 600; border-width: 2px; }
+    /* 1. 전체 1200px 중앙 정렬 래퍼 (연령대 분석과 동일 규격) */
+    .trend-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    /* 2. 본문 카드 디자인 (둥근 모서리, 부드러운 그림자) */
+    .report-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 2rem rgba(0,0,0,0.06);
+        background: #fff;
+    }
+    .report-card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #f1f3f9;
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1.5rem 2rem;
+    }
+
+    /* 3. 버튼 클릭 및 호버(Hover) 시 세련된 액션 */
+    .btn-trend { 
+        transition: all 0.3s ease; 
+        margin-bottom: 8px; 
+        font-weight: 600; 
+        border-width: 2px; 
+        border-radius: 8px; /* 살짝 더 둥글게 */
+        padding: 8px 16px;
+        letter-spacing: -0.3px;
+    }
+    .btn-trend:hover {
+        transform: translateY(-2px); /* 마우스 올리면 살짝 떠오름 */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
     
     /* 활성화된 버튼들: 해당 카테고리 색상으로 꽉 채움 */
-    .btn-outline-primary.active { background-color: #4e73df !important; color: #fff !important; }
-    .btn-outline-info.active { background-color: #36b9cc !important; color: #fff !important; }
-    .btn-outline-danger.active { background-color: #e74a3b !important; color: #fff !important; }
-    .btn-outline-warning.active { background-color: #f6c23e !important; color: #fff !important; }
-    .btn-outline-secondary.active { background-color: #858796 !important; color: #fff !important; }
-    .btn-outline-success.active { background-color: #1cc88a !important; color: #fff !important; }
+    .btn-outline-primary.active { background-color: #4e73df !important; color: #fff !important; box-shadow: 0 4px 10px rgba(78, 115, 223, 0.3); }
+    .btn-outline-info.active { background-color: #36b9cc !important; color: #fff !important; box-shadow: 0 4px 10px rgba(54, 185, 204, 0.3); }
+    .btn-outline-danger.active { background-color: #e74a3b !important; color: #fff !important; box-shadow: 0 4px 10px rgba(231, 74, 59, 0.3); }
+    .btn-outline-warning.active { background-color: #f6c23e !important; color: #fff !important; box-shadow: 0 4px 10px rgba(246, 194, 62, 0.3); }
+    .btn-outline-secondary.active { background-color: #858796 !important; color: #fff !important; box-shadow: 0 4px 10px rgba(133, 135, 150, 0.3); }
+    .btn-outline-success.active { background-color: #1cc88a !important; color: #fff !important; box-shadow: 0 4px 10px rgba(28, 200, 138, 0.3); }
 
-    /* 기준치 라벨 디자인 보강 */
-    #stdLabel { font-size: 0.95rem; font-weight: 800; padding: 10px 15px; border-radius: 30px; }
-    .badge-normal { background-color: #1cc88a; color: white; } /* 정상일 때 초록색 */
-    .badge-caution { background-color: #e74a3b; color: white; } /* 주의 필요할 때 빨간색 */
+    /* 4. 기준치 라벨 디자인 보강 (요즘 유행하는 파스텔톤 뱃지 스타일) */
+    #stdLabel { 
+        font-size: 0.95rem; 
+        font-weight: 700; 
+        padding: 8px 18px; 
+        border-radius: 20px; 
+        letter-spacing: -0.5px;
+    }
+    .badge-normal { 
+        background-color: rgba(28, 200, 138, 0.1); 
+        color: #1cc88a; 
+        border: 1px solid rgba(28, 200, 138, 0.3); 
+    }
+    .badge-caution { 
+        background-color: rgba(231, 74, 59, 0.1); 
+        color: #e74a3b; 
+        border: 1px solid rgba(231, 74, 59, 0.3); 
+    }
 </style>
 {% endblock %}
 
@@ -26,52 +73,54 @@
     <div class="trend-page">
         <div class="trend-header">
             <h1>종합 건강 지표 추이</h1>
-            <p>항목을 선택하면 정상 기준 대비 나의 수치 변화를 확인합니다.</p>
+            <p>항목을 선택하면 정상 기준 대비 나의 수치 변화를 상세하게 확인합니다.</p>
         </div>
 
         {% if trend_data|length == 0 %}
-            <div class="table-empty">
-                <p>등록된 건강검진 결과가 없습니다.</p>
-                <a href="{{ url_for('health.create_health_record') }}">등록하러 가기 →</a>
+            <div class="table-empty text-center p-5 report-card mb-5">
+                <div class="mb-3"><i class="fas fa-folder-open text-gray-300" style="font-size: 3rem;"></i></div>
+                <h5 class="text-gray-600 font-weight-bold mb-3">등록된 건강검진 결과가 없습니다</h5>
+                <a href="{{ url_for('health.create_health_record') }}" class="btn btn-primary px-4 py-2" style="border-radius: 30px;">건강검진 등록하러 가기 <i class="fas fa-arrow-right ml-1"></i></a>
             </div>
         {% else %}
     
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <div class="d-flex flex-wrap" style="gap: 8px;">
-                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'height', '키', null, true)">1. 키</button>
-                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'weight', '몸무게', null, true)">2. 몸무게</button>
-                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'BMI', 'BMI', 23, true)">3. BMI</button>
-                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'waist', '허리둘레', 90, true)">4. 허리둘레</button>
+        <div class="card report-card mb-4">
+            <div class="card-body p-4 p-md-5">
+                <h6 class="font-weight-bold text-primary mb-4" style="font-size: 1.05rem;">검사 항목 선택</h6>
+                <div class="d-flex flex-wrap" style="gap: 10px;">
+                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'height', '키', null)">1. 키</button>
+                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'weight', '몸무게', null)">2. 몸무게</button>
+                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'BMI', 'BMI', {min: 18.5, max: 24.9})">3. BMI</button>
+                    <button class="btn btn-outline-primary btn-sm btn-trend" onclick="changeChart(this, 'waist', '허리둘레', {max: 90})">4. 허리둘레</button>
                     
-                    <button class="btn btn-outline-info btn-sm btn-trend" onclick="changeChart(this, 'vision_left', '시력(좌)', null, false)">5. 시력(좌)</button>
-                    <button class="btn btn-outline-info btn-sm btn-trend" onclick="changeChart(this, 'vision_right', '시력(우)', null, false)">6. 시력(우)</button>
+                    <button class="btn btn-outline-info btn-sm btn-trend" onclick="changeChart(this, 'vision_left', '시력(좌)', {min: 0.8, max: 1.2})">5. 시력(좌)</button>
+                    <button class="btn btn-outline-info btn-sm btn-trend" onclick="changeChart(this, 'vision_right', '시력(우)', {min: 0.8, max: 1.2})">6. 시력(우)</button>
                     
-                    <button class="btn btn-outline-danger btn-sm btn-trend" onclick="changeChart(this, 'systolic_bp', '수축기 혈압', 120, true)">7. 수축기</button>
-                    <button class="btn btn-outline-danger btn-sm btn-trend" onclick="changeChart(this, 'diastolic_bp', '이완기 혈압', 80, true)">8. 이완기</button>
+                    <button class="btn btn-outline-danger btn-sm btn-trend" onclick="changeChart(this, 'systolic_bp', '수축기 혈압', {min: 90, max: 120})">7. 수축기 혈압</button>
+                    <button class="btn btn-outline-danger btn-sm btn-trend" onclick="changeChart(this, 'diastolic_bp', '이완기 혈압', {min: 60, max: 80})">8. 이완기 혈압</button>
                     
-                    <button class="btn btn-outline-warning btn-sm btn-trend" onclick="changeChart(this, 'hemoglobin', '혈색소', 13, false)">9. 혈색소</button>
-                    <button class="btn btn-outline-warning btn-sm btn-trend" onclick="changeChart(this, 'fasting_glucose', '공복혈당', 100, true)">10. 공복혈당</button>
+                    <button class="btn btn-outline-warning btn-sm btn-trend" onclick="changeChart(this, 'hemoglobin', '혈색소', {min: 12, max: 16})">9. 혈색소</button>
+                    <button class="btn btn-outline-warning btn-sm btn-trend" onclick="changeChart(this, 'fasting_glucose', '공복혈당', {min: 70, max: 100})">10. 공복혈당</button>
                     
-                    <button class="btn btn-outline-secondary btn-sm btn-trend" onclick="changeChart(this, 'creatinine', '크레아티닌', 1.2, true)">11. 크레아티닌</button>
-                    <button class="btn btn-outline-secondary btn-sm btn-trend" onclick="changeChart(this, 'eGFR', 'GFR(신사구체 여과율)', 60, false)">12. GFR</button>
+                    <button class="btn btn-outline-secondary btn-sm btn-trend" onclick="changeChart(this, 'creatinine', '크레아티닌', {min: 0.5, max: 1.2})">11. 크레아티닌</button>
+                    <button class="btn btn-outline-secondary btn-sm btn-trend" onclick="changeChart(this, 'eGFR', '신사구체 여과율(eGFR)', {min: 90, max: 150})">12. GFR</button>
                     
-                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'AST', 'AST(간기능)', 40, true)">13. AST</button>
-                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'ALT', 'ALT(간기능)', 40, true)">14. ALT</button>
-                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'rGTP', 'r-GTP(감마지티피)', 50, true)">15. rGTP</button>
+                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'AST', 'AST(간기능)', {max: 40})">13. AST</button>
+                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'ALT', 'ALT(간기능)', {max: 40})">14. ALT</button>
+                    <button class="btn btn-outline-success btn-sm btn-trend" onclick="changeChart(this, 'rGTP', '감마지티피(rGTP)', {max: 60})">15. rGTP</button>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary" id="chartLabel">데이터 로딩 중...</h6>
+        <div class="card report-card mb-5">
+            <div class="report-card-header d-flex justify-content-between align-items-center">
+                <h5 class="m-0 font-weight-bold text-gray-800" id="chartLabel">데이터 로딩 중...</h5>
                 <div id="stdLabelArea">
                     <span id="stdLabel" style="display:none;"></span>
                 </div>
             </div>
-            <div class="card-body">
-                <div style="height: 420px;"><canvas id="trendChart"></canvas></div>
+            <div class="card-body p-4 p-md-5">
+                <div style="height: 450px;"><canvas id="trendChart"></canvas></div>
             </div>
         </div>
         {% endif %}
@@ -82,7 +131,7 @@
     const rawData = {{ trend_data | tojson | safe }};
     let myChart = null;
 
-    function changeChart(btnElement, col, label, std, isUnder) {
+    function changeChart(btnElement, col, label, limit) {
         if (!rawData || rawData.length === 0) return;
 
         // 1. 버튼 활성화 상태 유지
@@ -90,25 +139,58 @@
         buttons.forEach(btn => btn.classList.remove('active'));
         if (btnElement) btnElement.classList.add('active');
 
-        // 2. 라벨 및 기준치 텍스트 설정 (이상/이하 표시)
-        document.getElementById('chartLabel').innerText = label + " 변화 추이";
+        document.getElementById('chartLabel').innerHTML = '<span class="text-primary mr-2">|</span>' + label + ' 변화 추이';
         const stdLabel = document.getElementById('stdLabel');
         
-        if (std !== null) {
-            const direction = isUnder ? " 이하" : " 이상";
-            stdLabel.innerText = "정상 기준: " + std + direction;
-            stdLabel.style.display = "inline";
+        let stdText = "";
+        let isNormal = true;
+        let limitDatasets = []; 
+        
+        const latestVal = parseFloat(rawData[rawData.length - 1][col]);
 
-            // 최근 데이터와 비교하여 색상 변경
-            const latestVal = parseFloat(rawData[rawData.length - 1][col]);
-            const isNormal = isUnder ? (latestVal <= std) : (latestVal >= std);
-            
+        if (limit) {
+            if (limit.min !== undefined && limit.max !== undefined) {
+                stdText = limit.min + " ~ " + limit.max;
+                isNormal = (latestVal >= limit.min && latestVal <= limit.max);
+                
+                limitDatasets.push({
+                    label: '정상 하한선 (' + limit.min + ')',
+                    data: rawData.map(() => limit.min),
+                    borderColor: 'rgba(28, 200, 138, 0.8)', borderDash: [6, 4], pointRadius: 0, fill: false, borderWidth: 2
+                });
+                limitDatasets.push({
+                    label: '정상 상한선 (' + limit.max + ')',
+                    data: rawData.map(() => limit.max),
+                    borderColor: 'rgba(231, 74, 59, 0.8)', borderDash: [6, 4], pointRadius: 0, fill: false, borderWidth: 2
+                });
+            } 
+            else if (limit.max !== undefined) {
+                stdText = limit.max + " 이하";
+                isNormal = (latestVal <= limit.max);
+                limitDatasets.push({
+                    label: '정상 기준선 (' + stdText + ')',
+                    data: rawData.map(() => limit.max),
+                    borderColor: 'rgba(231, 74, 59, 0.8)',
+borderDash: [6, 4], pointRadius: 0, fill: false, borderWidth: 2
+                });
+            } 
+            else if (limit.min !== undefined) {
+                stdText = limit.min + " 이상";
+                isNormal = (latestVal >= limit.min);
+                limitDatasets.push({
+                    label: '정상 기준선 (' + stdText + ')',
+                    data: rawData.map(() => limit.min),
+                    borderColor: 'rgba(28, 200, 138, 0.8)', borderDash: [6, 4], pointRadius: 0, fill: false, borderWidth: 2
+                });
+            }
+
+            stdLabel.innerHTML = "<i class='fas fa-info-circle mr-1'></i>정상 기준: " + stdText;
+            stdLabel.style.display = "inline-block";
             stdLabel.className = isNormal ? "badge badge-normal" : "badge badge-caution";
         } else {
             stdLabel.style.display = "none";
         }
 
-        // 3. 차트 그리기
         const ctx = document.getElementById('trendChart');
         if (myChart) myChart.destroy();
 
@@ -123,39 +205,50 @@
                         label: '나의 수치',
                         data: rawData.map(d => d[col]),
                         borderColor: '#4e73df',
-                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.08)',
                         fill: true,
-                        tension: 0.3,
+                        tension: 0.4, /* 선을 좀 더 부드럽고 곡선으로! */
                         pointRadius: 6,
-                        pointHitRadius: 10,
-                        pointBackgroundColor: '#4e73df'
+                        pointHitRadius: 15,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#4e73df',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#4e73df'
                     },
-                    ...(std !== null ? [{
-                        label: '정상 기준선 (' + std + (isUnder ? ' 이하' : ' 이상') + ')',
-                        data: rawData.map(() => std),
-                        borderColor: '#e74a3b',
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        fill: false,
-                        borderWidth: 2
-                    }] : [])
+                    ...limitDatasets 
                 ]
             },
             options: {
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true, position: 'top' },
-                    tooltip: { mode: 'index', intersect: false }
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { boxWidth: 12, usePointStyle: true, padding: 20, font: { weight: 'bold', color: '#5a5c69' } }
+                    },
+                    tooltip: { 
+                        mode: 'index', 
+                        intersect: false,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#5a5c69',
+                        bodyColor: '#5a5c69',
+                        borderColor: '#eaecf4',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        titleFont: { size: 14, weight: 'bold' }
+                    }
                 },
                 scales: { 
                     y: { 
                         beginAtZero: false,
-                        grid: { color: '#f0f0f0' },
-                        ticks: { font: { weight: 'bold' } }
+                        grid: { color: '#eaecf4', borderDash: [5, 5], drawBorder: false }, /* 그리드를 세련된 점선으로 */
+                        ticks: { font: { weight: '600' }, color: '#858796', padding: 10 }
                     },
                     x: {
-                        grid: { display: false },
-                        ticks: { font: { weight: 'bold' } }
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { weight: '600' }, color: '#858796', padding: 10 }
                     }
                 }
             }
@@ -164,9 +257,8 @@
 
     window.onload = function() {
         if (rawData && rawData.length > 0) {
-            // BMI를 기본값으로 설정 (3번째 버튼)
             const defaultBtn = document.querySelectorAll('.btn-trend')[2]; 
-            changeChart(defaultBtn, 'BMI', 'BMI', 23, true);
+            changeChart(defaultBtn, 'BMI', 'BMI', {min: 18.5, max: 24.9});
         }
     };
 </script>

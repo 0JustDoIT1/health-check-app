@@ -61,3 +61,8 @@ coverage.xml
 
 # Ignore Google Cloud credentials
 health-ocr/vision-key.json
+
+# Documents (add)
+*.pdf
+*.docx
+*.pptx

@@ -1,7 +1,7 @@
 # 검진모아 🏥
 > 건강검진 데이터 통합 관리 플랫폼
 
-[![Live](https://img.shields.io/badge/Live-gumjinmoa.kro.kr-teal)](http://gumjinmoa.kro.kr/)
+<!-- [![Live](https://img.shields.io/badge/Live-gumjinmoa.kro.kr-teal)](http://gumjinmoa.kro.kr/) -->
 
 ## 프로젝트 소개
 

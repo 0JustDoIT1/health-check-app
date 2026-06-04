@@ -1,46 +1,71 @@
+<div align="center">
+
 # 검진모아 🏥
-> 건강검진 데이터 통합 관리 플랫폼
 
-<!-- [![Live](https://img.shields.io/badge/Live-gumjinmoa.kro.kr-teal)](http://gumjinmoa.kro.kr/) -->
+**건강검진 데이터 통합 관리 플랫폼**
 
-## 프로젝트 소개
+*OCR 자동입력 · 건강 추이 시각화 · 직관적 점수 피드백*
 
-건강검진 결과를 한 곳에서 통합 관리하고, 직관적인 시각화로 건강 추이를 파악할 수 있는 웹 플랫폼입니다.
+<!-- [![Live](https://img.shields.io/badge/🌐_Live-gumjinmoa.kro.kr-0d9488?style=for-the-badge)](http://gumjinmoa.kro.kr/) -->
 
-| 문제 | 해결 방법 |
-|------|-----------|
-| 일회성으로 끝나는 검진 결과 | OCR 인식 및 PDF 저장 |
-| 건강 추이 파악의 어려움 | 그래프를 통한 시계열 추이 시각화 |
+![Python](https://img.shields.io/badge/Python-Flask-3776AB?style=flat-square&logo=python&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![GCP](https://img.shields.io/badge/GCP-VM_Infra-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-OCR_Server-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+
+</div>
+
+---
+
+## 💡 왜 만들었나요?
+
+건강검진을 받고 나서 결과지를 서랍에 넣어두고 잊어버린 경험, 누구나 있을 겁니다.  
+**검진모아**는 흩어진 검진 기록을 한 곳에 모아, 내 건강이 어떻게 변해왔는지 한눈에 보여줍니다.
+
+| 😤 문제 | ✅ 해결 방법 |
+|--------|------------|
+| 일회성으로 끝나는 검진 결과 | OCR 인식 및 PDF 저장으로 영구 보관 |
+| 건강 추이 파악의 어려움 | 그래프를 통한 시계열 시각화 |
 | 이해하기 어려운 수치 지표 | 직관적인 색상 및 점수 피드백 |
 
-## 기술 스택
+---
+
+## 🛠️ 기술 스택
 
 | 구분 | 기술 |
 |------|------|
-| Frontend | HTML5, CSS3, JavaScript, Bootstrap |
-| Backend | Python, Flask, Gunicorn |
-| Database | MySQL |
-| OCR | Google Vision API (Node.js 서버) |
-| Infra | GCP (VM 인스턴스), Nginx, HTTPS |
+| **Frontend** | HTML5, CSS3, JavaScript, Bootstrap |
+| **Backend** | Python, Flask, Gunicorn |
+| **Database** | MySQL |
+| **OCR** | Google Vision API (Node.js 서버) |
+| **Infra** | GCP VM 인스턴스, Nginx, HTTPS |
 
-## 시스템 아키텍처
+---
+
+## 🏗️ 시스템 아키텍처
 
 ```
 사용자 (HTTPS)
-    ↕
-gumjinmoa.kro.kr (임시 도메인)
-    ↕
-GCP VM 인스턴스
-    ├── Nginx (리버스 프록시)
-    ├── Gunicorn (WSGI 서버)
-    ├── Flask / Python (백엔드)
-    ├── MySQL (데이터베이스)
-    └── Node.js OCR 서버 (port 4000)
-            ↕
-        Google Vision API
+      │
+      ▼
+gumjinmoa.kro.kr
+      │
+      ▼
+ GCP VM 인스턴스
+      ├── Nginx          (리버스 프록시)
+      ├── Gunicorn        (WSGI 서버)
+      ├── Flask / Python  (백엔드)
+      ├── MySQL           (데이터베이스)
+      └── Node.js         (OCR 서버 · port 4000)
+               │
+               ▼
+       Google Vision API
 ```
 
-## 주요 기능
+---
+
+## ✨ 주요 기능
 
 ### 🔐 로그인 / 회원가입
 - Parsley.js + 정규식 기반 입력값 검증
@@ -68,27 +93,31 @@ GCP VM 인스턴스
 - 연도 필터, 이름 검색, 날짜 정렬 지원
 - LIMIT / OFFSET 기반 서버사이드 페이지네이션 (5건/페이지)
 
-## 프로젝트 구조
+---
+
+## 📁 프로젝트 구조
 
 ```
 health-check-app/
-├── app.py              # 애플리케이션 진입점
-├── constants/          # 공통 상수
-├── dao/                # DB SQL 쿼리 및 로직
-├── db/                 # MySQL 연결 처리
-├── health-ocr/         # OCR Node.js 서버
-├── routes/             # Flask 라우팅
-├── static/             # CSS, JS, 이미지 등 정적 파일
-├── templates/          # Jinja2 HTML 템플릿
+├── app.py               # 애플리케이션 진입점
+├── constants/           # 공통 상수
+├── dao/                 # DB SQL 쿼리 및 로직
+├── db/                  # MySQL 연결 처리
+├── health-ocr/          # OCR Node.js 서버
+├── routes/              # Flask 라우팅
+├── static/              # CSS, JS, 이미지 등 정적 파일
+├── templates/           # Jinja2 HTML 템플릿
 │   ├── auth/
-│   ├── components/     # header, sidebar, footer
+│   ├── components/      # header, sidebar, footer
 │   └── health/
-└── .env                # 환경변수
+└── .env                 # 환경변수
 ```
 
-## 향후 개선 방향
+---
 
-- **JWT 토큰** 기반 인증 시스템으로 전환
-- **CI/CD 파이프라인** 구축으로 자동 배포
-- 검진 항목별 **더 세분화된 기준 구간** 적용
-- **건강검진 일정 관리** 및 주변 병원 정보 제공
+## 🔭 향후 개선 방향
+
+- [ ] **JWT 토큰** 기반 인증 시스템으로 전환
+- [ ] **CI/CD 파이프라인** 구축으로 자동 배포
+- [ ] 검진 항목별 **더 세분화된 기준 구간** 적용
+- [ ] **건강검진 일정 관리** 및 주변 병원 정보 제공
